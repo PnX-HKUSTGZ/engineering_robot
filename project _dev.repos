@@ -1,0 +1,21 @@
+repositories:
+  core/interfaces:
+    type: git
+    url: git@github.com:PnX-HKUSTGZ/engineering_interfaces.git
+    version: dev
+  core/sencer_drivers:
+    type: git
+    url: git@github.com:PnX-HKUSTGZ/sensor_drivers.git
+    version: dev
+  core/target_redeem_box:
+    type: git
+    url: git@github.com:PnX-HKUSTGZ/target_redeem_box.git
+    version: dev
+  core/robot_model:
+    type: git
+    url: git@github.com:PnX-HKUSTGZ/robot_model.git
+    version: dev
+  core/engineering_resolve:
+    type: git
+    url: git@github.com:PnX-HKUSTGZ/engineering_resolve.git
+    version: dev

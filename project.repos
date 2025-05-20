@@ -1,5 +1,21 @@
 repositories:
-  core/target_repository:
+  core/interfaces:
     type: git
-    url: https://github.com/PnX-HKUSTGZ/Engineering_robot_RM2025_Pnx.git
+    url: git@github.com:PnX-HKUSTGZ/engineering_interfaces.git
+    version: main
+  core/sencer_drivers:
+    type: git
+    url: git@github.com:PnX-HKUSTGZ/sensor_drivers.git
+    version: main
+  core/target_redeem_box:
+    type: git
+    url: git@github.com:PnX-HKUSTGZ/target_redeem_box.git
+    version: main
+  core/robot_model:
+    type: git
+    url: git@github.com:PnX-HKUSTGZ/robot_model.git
+    version: main
+  core/engineering_resolve:
+    type: git
+    url: git@github.com:PnX-HKUSTGZ/engineering_resolve.git
     version: main
