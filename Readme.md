@@ -63,6 +63,9 @@
     完成后重启终端
 
 5. 编译
+    > 注意：
+    > 移除任何意义上的虚拟环境，如conda，venv等。
+    > e.g. 运行 `conda deactivate`
     ```bash
     sudo chmod +x build.sh
     ./build.sh

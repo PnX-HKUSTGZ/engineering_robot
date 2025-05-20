@@ -15,7 +15,7 @@ repositories:
     type: git
     url: git@github.com:PnX-HKUSTGZ/robot_model.git
     version: main
-  core/engineering_resolve:
+  core/engineering_control:
     type: git
-    url: git@github.com:PnX-HKUSTGZ/engineering_resolve.git
+    url: git@github.com:PnX-HKUSTGZ/engineering_control.git
     version: main
