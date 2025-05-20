@@ -1,0 +1,5 @@
+repositories:
+  core/target_repository:
+    type: git
+    url: https://github.com/PnX-HKUSTGZ/Engineering_robot_RM2025_Pnx.git
+    version: main
