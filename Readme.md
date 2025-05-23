@@ -19,13 +19,16 @@
 
 ## 项目结构
 
-+ core 文件夹包含了机器人的核心组件，如控制器、传感器、运动学等（完全配置后将被创建）
++ core 文件夹包含了机器人的核心组件，如控制器、传感器、运动学等
 + project.repos 用于vcs工具定义每个仓库的位置
 + bringup.sh 环境配置脚本，用于安装依赖
 + build.sh 编译脚本，用于编译所有的包
 + material 文件夹包含了一些材料，开源资料，规则手册等
 + launch 文件夹包含了启动文件
 
+## 代码规范
+
+[CodeSpecification.md](CodeSpecification.md)
 
 ## 安装
 
@@ -43,26 +46,14 @@
 
     ```
 
-2. 安装VCS工具
-    ```bash
-    sudo apt-get update
-    sudo apt-get install python3-vcstool
-    ```
-
-3. 导入仓库
-
-    ```bash
-    vcs import src < project.repos
-    ```
-
-4. 安装依赖
+2. 安装依赖
     ```bash
     sudo chmod +x bringup.sh
     sudo ./bringup.sh
     ```
     完成后重启终端
 
-5. 编译
+3. 编译
     > 注意：
     > 移除任何意义上的虚拟环境，如conda，venv等。
     > e.g. 运行 `conda deactivate`
@@ -71,7 +62,7 @@
     ./build.sh
     ```
 
-6. 启动
+4. 启动
     ```bash
     ros2 launch <launch file>
     ```

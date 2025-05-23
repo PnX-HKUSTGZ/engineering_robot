@@ -28,4 +28,4 @@
 
 ## engineering_robot_moveit
 
-这个是模型的moveit和ros2 control配置文件
+这个是模型的moveit和ros2 control配置文件，其中有一些启动文件
