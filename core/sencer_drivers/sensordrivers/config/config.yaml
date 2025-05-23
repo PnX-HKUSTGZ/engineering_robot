@@ -1,0 +1,107 @@
+camera:
+  height: 1080
+  width: 1440
+  dist_coeffs: [-0.08514213078611998, 0.2249919871969058, 0.0004426030910578343, -0.0001779668380391995, -0.246659980650563]
+  camera_matrix: [1796.781017873506, 0, 689.1778242334642 , 0, 1797.197922401104, 570.7557440356007, 0.0, 0.0, 1.0]
+  ExposureTimeLower: 10000
+  ExposureTimeUpper: 10000
+  Gain: 10.0
+
+RealSense:
+  EXPOSURE: 166
+  GAIN: 10
+  BRIGHTNESS: 0
+  depth_wight: 1280
+  depth_hight: 720
+  depmin: 0.2
+  depmax: 2
+  
+  LeafSize: 0.005 # unit m
+
+  StddevMulThresh: 1.0
+  MeanK: 50
+
+mid_360:
+  Mid360SendTimeInterval: 10 # ms int
+  buffertime: [0,100000000] # [s,ns]
+
+AVIA:
+  AVIASendTimeInterval: 10 # ms int
+  buffertime: [10,100000000] # [s,ns]
+  broadcast_code: []
+
+
+object_pos:
+  arm: # arm to map
+    translation:
+      x: 0.
+      y: 0.
+      z: 0.
+    rotate:
+      w: 0.7071068
+      x: 0.
+      y: 0.
+      z: 0.7071068
+  camera: # camera to map
+    translation:
+      x: -0.080000000000085
+      y: 0.0121000016614134
+      z: 0.36124073844197
+    rotate:
+      w: 0.7071068
+      x: -0.7071068
+      y: 0.
+      z: 0.
+  mid360: # mid360 to map
+    translation:
+      x: 0.06623
+      y: -0.03333
+      z: 0.047
+    rotate:
+      w: 0.
+      x: 0.
+      y: 0.
+      z: 1.
+  AVIA: # AVIA to map
+    translation:
+      x: 0.
+      y: 0.
+      z: 0.
+    rotate:
+      w: 1.
+      x: 0.
+      y: 0.
+      z: 0.
+  RealSense:
+    deep:
+      translation:
+        x: -0.015
+        y: 0.0043
+        z: -0.016
+      rotate:
+        w: -0.7071068
+        x: 0.7071068
+        y: 0.
+        z: 0.
+    color:
+      translation:
+        x: -0.0303
+        y: 0.0043
+        z: 0.
+      rotate:
+        w: -0.7071068
+        x: 0.7071068
+        y: 0.
+        z: 0.
+    main:
+      translation:
+        x: 0.16999970395237
+        y: -0.033000353576592
+        z: 0.36374073844197
+      rotate:
+        w: 1.0
+        x: 0.
+        y: 0.
+        z: 0.
+  
+

@@ -1,0 +1,10 @@
+moveit_setup_assistant_config:
+  urdf:
+    package: engineering_robot
+    relative_path: urdf/engineering_robot.urdf
+  srdf:
+    relative_path: config/engineering_robot.srdf
+  package_settings:
+    author_name: LQX
+    author_email: 183842220@qq.com
+    generated_timestamp: 1746798047

@@ -1,4 +1,3 @@
-core/
 image/
 video/
 .vscode/
@@ -14,3 +13,5 @@ __pycache__/
 MvSdkLog/
 record/
 ros_bag/
+COLCON_IGNORE
+.built_by

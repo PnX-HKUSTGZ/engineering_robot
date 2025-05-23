@@ -1,0 +1,9 @@
+# Default initial positions for engineering_robot's ros2_control fake system
+
+initial_positions:
+  J1J: 0
+  J2J: 0
+  J3J: 0
+  J4J: 0
+  J5_xJ: 0
+  J5_zJ: 0

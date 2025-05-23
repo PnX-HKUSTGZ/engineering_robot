@@ -1,0 +1,13 @@
+# Controller manager configuration
+minOrientationTolerance: 0.3
+minPositionTolerance: 0.05
+maxOrientationTolerance: 0.3
+maxPositionTolerance: 0.25
+AllowPlanAttempt: 5
+minPlanTime: 5
+maxPlanTime: 5
+ARM_CONTROL_GROUP: "arm"
+END_EFFECTOR_CONTROL_GROUP : "sucker"
+MultithreadNum: 5
+NumPlanningAttempts: 10
+planner: "RRTConnectkConfigRM"

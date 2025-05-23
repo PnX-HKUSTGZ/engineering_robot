@@ -1,0 +1,9 @@
+<library path="engineering_robot_hardware_interface"> <!-- library 标签指向你的共享库名称 -->
+  <class
+    name="Engineering_robot_Pnx/ERHardwareInterface" 
+    base_class_type="hardware_interface::SystemInterface"
+    type="Engineering_robot_Pnx::ERHardwareInterface">
+      <description>Hardware interface for the engineering robot. Implements a SystemInterface.</description>
+  </class>
+  <!-- 如果你的同一个库里有多个插件类，可以在 library 标签内再添加 class 标签 -->
+</library>

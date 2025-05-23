@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="engineering_robot">
+    <xacro:arg name="initial_positions_file" default="initial_positions.yaml" />
+
+    <!-- Import engineering_robot urdf file -->
+    <xacro:include filename="$(find engineering_robot)/urdf/engineering_robot.urdf" />
+
+    <!-- Import control_xacro -->
+    <xacro:include filename="engineering_robot.ros2_control.xacro" />
+
+
+    <xacro:engineering_robot_ros2_control name="Realsysystem" initial_positions_file="$(arg initial_positions_file)"/>
+
+</robot>

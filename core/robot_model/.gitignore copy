@@ -1,0 +1,16 @@
+core/
+image/
+video/
+.vscode/
+build/
+install/
+log/
+*.mp4
+*.avi
+video.avi
+Pictures/
+*.png
+__pycache__/
+MvSdkLog/
+record/
+ros_bag/

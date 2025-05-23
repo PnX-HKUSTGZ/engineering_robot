@@ -1,0 +1,3 @@
+# engineering_robot_moveit
+
+这个是模型的moveit和ros2 control配置文件
