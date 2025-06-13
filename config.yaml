@@ -1,0 +1,229 @@
+---
+
+camera:
+  height: 1080
+  width: 1440
+  dist_coeffs: [-0.08514213078611998, 0.2249919871969058, 0.0004426030910578343, -0.0001779668380391995, -0.246659980650563]
+  camera_matrix: [1796.781017873506, 0, 689.1778242334642 , 0, 1797.197922401104, 570.7557440356007, 0.0, 0.0, 1.0]
+  ExposureTimeLower: 10000
+  ExposureTimeUpper: 10000
+  Gain: 10
+
+RealSense:
+  EXPOSURE: 166
+  GAIN: 10
+  BRIGHTNESS: 0
+  depth_wight: 1280
+  depth_hight: 720
+  depmin: 0.2
+  depmax: 2
+  
+  LeafSize: 0.005 # unit m
+
+  StddevMulThresh: 1.0
+  MeanK: 50
+  
+
+RedeemBox_detector:
+  LaunchMode:
+    DetectArrow: True
+    TargetRectangle: false
+    PclManage: false
+  KeyPoints:
+    redeem_box:
+    # 兑换框的四个角点，单位是m，坐标是以侧面箭头顶点位原点，z轴指向内侧的右手系
+      redeemptionBoxCornerPoints:
+        - [-0.12, 0.12, 0]
+        - [0.12, 0.12, 0]
+        - [0.12, -0.12, 0]
+        - [-0.12, -0.12, 0]
+        # 箭头指向的那边的那条直线的起点和终点，单位是m，坐标是以侧面箭头顶点位原点，z轴指向内侧的右手系
+      line:
+        - [0.144, 0.144, 0.]
+        - [0.144, -0.144, 0.]
+      # frontface center
+      center: [0.0, 0.0, 0.0]
+
+    arrow:
+      # 箭头的8个角点，单位是m，坐标是以侧面箭头顶点位原点，z轴指向内侧的右手系
+      # 顺序是：
+      # 1. 外侧顶点
+      # 2. 内侧顶点
+      # 3. x轴外侧
+      # 4. x轴内侧
+      # 5. y轴外侧
+      # 6. y轴内侧
+      # 7. 内侧y轴与外侧x轴的交点
+      # 8. 内侧x轴与外侧y轴的交点
+      arrowPoints:
+      - [0.144, 0, 0.0455]
+      - [0.144, 0, 0.059642135623730955]
+      - [0.144, -0.1, 0.1455]
+      - [0.144, -0.08585786437626905, 0.1455]
+      - [0.144, 0.1, 0.1455]
+      - [0.144, 0.08585786437626905, 0.1455]
+      - [0.144, -0.007071067811865476, 0.05257106781186548]
+      - [0.144, 0.007071067811865476, 0.05257106781186548]
+
+    RectanglePoints:
+    - [0.144, 0.144, 0]
+    - [0.144, -0.144, 0]
+    - [-0.144, -0.144, 0]
+    - [-0.144, 0.144, 0]
+    - [0.120, 0.120, 0]
+    - [0.120, -0.120, 0]
+    - [-0.120, -0.120, 0]
+    - [-0.120, 0.120, 0]
+  Parameters:
+    arrow_detect:
+      ArrowDetectorPixelNumMax: 80000
+      ArrowDetectorPixelNumMin: 0
+      ArrowDetectorLengthWidthRatioMax: 3
+      ArrowDetectorLengthWidthRatioMin: 1.1
+      ArrowDetectorApproxSizeMax: 8.
+      ArrowDetectorApproxSizeMin: 6.
+      ArrowDetectorCannyThreshold1: 200.
+      ArrowDetectorCannyThreshold2: 300.
+      ArrowDetectorHoughRho: 0.25
+      ArrowDetectorHoughTheta: 0.00436332312998582394230922638889
+      ArrowDetectorHoughThreshold: 35.
+      ArrowDetectParallelThreshold: 0.523598775598298873077
+      ArrowDetectorThresholdThresh: 130.
+      ArrowDetectorThresholdMaxval: 300.
+      ArrowDetectorThresholdThreshold: 5.
+      ArrowDetectorIterations: 5.
+      ArrowDetectorapproxPolyDPEpsilon: 10.
+      ArrowDetectorLongShortRateMax: 25.
+      ArrowDetectorLongShortRateMin: 5.
+    rectangle_detect:
+      DetectRectangleBlockSize: 9
+      DetectRectangleC: 0
+      DetectRectangleMaxValue: 250
+      TargetRectangleapproxPolyDPepsilon: 6
+      TargetRectanglePixelNumMax: 10000
+      TargetRectanglePixelNumMin: 400
+      TargetRectangleApproxSizeMax: 6
+      TargetRectangleApproxSizeMin: 6
+      TargetRectangleHWRateMax: 10
+      TargetRectangleHWRateMin: 0.5
+      TargetRectangleErodeCoreSize: [2,2]
+      TargetRectangleErodeItrations: 3
+      TargetRectangleDilateCoreSize: [2,2]
+      TargetRectangleDilateItrations: 2
+      TargetRectanglee4f2rateMin: 1.5
+      TargetRectanglee4f2rateMax: 5
+      DetectRectangleAlpha: 1.3
+      DetectRectangleBeta: 0
+      TargetRectangleSlopeVarianceThreshold: 30
+      TargetRectangleSlopeHorizonThreshold: 15
+      TargetRectanglePairFourCornersThreshold: 100
+    PCLManager:
+      ransacDistanceThreshold: 0.03
+      ransacMaxIterations: 1
+      ransacMinInliersNum: 400
+      CloseThresehold: 100
+      ransacMaxPlaneNum: 7
+      PlaneOnCornersNumThreshold: 100
+      minPlaneDisThreshold: 0.30
+      pnpPlaneCloseThresehold: 0.03
+      pnpPlaneCloseAfterThresehold: 0.03
+
+    Main:
+      SyncPubBoxPos:
+        queuesiz: 20
+        syncThresehold: [1,10000000]
+        PubInterval: 10    
+      ImageClinentCallInterval: 10 #ms
+      buffertime: [0,100000000] # [s,ns]
+
+  
+
+
+c_strake_conmunication:
+  interval_time: 10 #ms
+
+
+mid_360:
+  Mid360SendTimeInterval: 10 # ms int
+  buffertime: [0,100000000] # [s,ns]
+
+AVIA:
+  AVIASendTimeInterval: 10 # ms int
+  buffertime: [10,100000000] # [s,ns]
+  broadcast_code: []
+
+
+object_pos:
+  arm: # arm to map
+    translation:
+      x: 0.
+      y: 0.
+      z: 0.
+    rotate:
+      w: 0.7071068
+      x: 0.
+      y: 0.
+      z: 0.7071068
+  camera: # camera to map
+    translation:
+      x: -0.080000000000085
+      y: 0.0121000016614134
+      z: 0.36124073844197
+    rotate:
+      w: 0.7071068
+      x: -0.7071068
+      y: 0.
+      z: 0.
+  mid360: # mid360 to map
+    translation:
+      x: 0.06623
+      y: -0.03333
+      z: 0.047
+    rotate:
+      w: 0.
+      x: 0.
+      y: 0.
+      z: 1.
+  AVIA: # AVIA to map
+    translation:
+      x: 0.
+      y: 0.
+      z: 0.
+    rotate:
+      w: 1.
+      x: 0.
+      y: 0.
+      z: 0.
+  RealSense:
+    deep:
+      translation:
+        x: -0.015
+        y: 0.0043
+        z: -0.016
+      rotate:
+        w: -0.7071068
+        x: 0.7071068
+        y: 0.
+        z: 0.
+    color:
+      translation:
+        x: -0.0303
+        y: 0.0043
+        z: 0.
+      rotate:
+        w: -0.7071068
+        x: 0.7071068
+        y: 0.
+        z: 0.
+    main:
+      translation:
+        x: 0.16999970395237
+        y: -0.033000353576592
+        z: 0.36374073844197
+      rotate:
+        w: 1.0
+        x: 0.
+        y: 0.
+        z: 0.
+  
+

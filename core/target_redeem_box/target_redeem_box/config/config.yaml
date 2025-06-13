@@ -1,0 +1,18 @@
+topics:
+  image: "/sensor/camera/images"
+  point_cloud: "sensor/RealSense/point_cloud"
+tf_frames:
+  image: "sensor/camera"
+  point_cloud: "sensor/mid360"
+input_data_time_out: [0,50000000] # int32 [s.ns] 
+
+# 设置哪些检测器运行，设置其运行参数 [type, name]
+# 对应的config 在 detector_config 下对应的 name 键下
+detectors: [ 
+  ["rectangle_detector","rectangle_detector"],
+  ["arrow_detector","arrow_detector"],
+  ["arrow_detector_pcl","arrow_detector_pcl"],
+  ]
+
+
+detector_config:
