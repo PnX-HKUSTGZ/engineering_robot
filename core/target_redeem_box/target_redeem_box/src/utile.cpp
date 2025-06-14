@@ -196,3 +196,94 @@ template void draw_pnp_result<float>(cv::Mat image,
     int thickness, 
     cv::Point textpos,
     bool draw_xyz);
+
+/**
+ * @brief find_polygon_counter_points_sets 的辅助函数，检测p是不是在 peaks 的忽略范围内
+ * @param p 需要探测的点
+ * @param peaks 顶点
+ * @param PeaksThreshold 忽略范围
+ * @return 如果有，则返回 pair<ture,对应的顶点>
+ * @return 反之，则返回 std::make_pair(0,cv::Point(-1,-1))
+ */
+std::pair<bool,cv::Point> is_in_peak_threshold(const cv::Point & p,const std::vector<cv::Point> & peaks,const double PeaksThreshold){
+    for(const auto & i : peaks){
+        if(distance_points(p,i)<=PeaksThreshold) return std::make_pair(1,i);
+    }
+    return std::make_pair(0,cv::Point(-1,-1));
+}
+
+void find_polygon_counter_points_sets(const cv::Mat & binary_image,
+    const std::vector<cv::Point> & peaks,
+    const double peaks_ignore_radius,
+    std::vector<std::vector<cv::Point>> & points_sets,
+    std::vector<std::pair<cv::Point,cv::Point> >& end_points){
+
+    // x上的位移
+    static int dx[8]={0,0,1,-1,1,-1,1,-1};
+    // y上的位移
+    static int dy[8]={1,-1,0,0,1,1,-1,-1};
+
+    int maxy=binary_image.rows;
+    int maxx=binary_image.cols;
+
+    // 用于记录已经被访问过的点
+    cv::Mat vis=binary_image.clone();
+
+    // 缩小扫描区域
+    cv::Rect AOI=cv::boundingRect(binary_image);
+    for(int i=AOI.x;i<AOI.x+AOI.width;i++){
+        for(int e=AOI.y;e<AOI.y+AOI.height;e++){
+
+            cv::Point now_point(i,e);
+
+            if(vis.at<uchar>(e,i)==0) continue;
+            if(is_in_peak_threshold(now_point,peaks,peaks_ignore_radius).first) continue;
+
+            vis.at<uchar>(e,i)=1;
+
+            // 当前的点集合
+            std::vector<cv::Point> points_set;
+            // 当前边的顶点
+            std::pair<cv::Point,cv::Point> endpoints=std::make_pair(cv::Point(-1,-1),cv::Point(-1,-1)) ;
+
+            std::queue<cv::Point> points_queue;
+
+            // 找边
+            while(!points_queue.empty()){
+                cv::Point now_point=points_queue.front();
+                points_queue.pop();
+                for(int i=0;i<8;i++){
+                    int nx=now_point.x+dx[i],ny=now_point.y+dy[i];
+                    cv::Point next_point(nx,ny);
+
+                    if(nx<0||nx>=maxx||ny<0||ny>=maxy) continue;
+                    
+                    if(vis.at<uchar>(ny,nx)==0) continue;
+
+                    std::pair<bool,cv::Point> result=is_in_peak_threshold(next_point,peaks,peaks_ignore_radius);
+                    // 添加端点
+                    if(result.first){
+                        if(endpoints.first==result.second||endpoints.second==result.second){
+                            continue;
+                        }
+                        if(endpoints.first.x==-1){
+                            endpoints.first=result.second;
+                        }
+                        else if(endpoints.second.x==-1){
+                            endpoints.second=result.second;
+                        }
+                        continue;
+                    }
+
+                    points_set.push_back(next_point);
+                    points_queue.push(next_point);
+                    vis.at<uchar>(ny,nx)=0;
+                }
+            }
+
+            points_sets.push_back(std::move(points_set));
+            end_points.push_back(std::move(endpoints));
+        }
+    }
+
+}

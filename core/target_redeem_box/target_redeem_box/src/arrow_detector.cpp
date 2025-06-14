@@ -266,6 +266,10 @@ bool ArrowDetector::targetArrow(const cv::Mat & binary_image, const cv::Mat & gr
 
     cv::drawContours(colored_image,Counters{candidate_counter},-1,cv::Scalar(432,32,255),2);
 
+    // 直线拟合阶段
+
+
+
     // Counter2f subpix_counter;
 
     // for(int i=0;i<candidate_counter.size();i++){
@@ -284,10 +288,74 @@ bool ArrowDetector::targetArrow(const cv::Mat & binary_image, const cv::Mat & gr
 }
 
 bool ArrowDetector::getCounterCorners(const Counter& counter, 
-    const cv::Mat& gray_image, 
+    const cv::Mat& binary_image, 
+    const cv::Mat& gray_image,
     Counter2f& corners){
 
-    Counter2f 
+    Counter approxcurve;
+    std::vector<std::pair<cv::Point,cv::Point> > sorted_end_points;
+    cv::approxPolyDP(counter,approxcurve,approxPolyDPEpsilon,1);
+
+    // 对 approxcurve 进行排序，确定每个点的位置
+
+    sortCorners(approxcurve, sorted_end_points);
+
+    // 使用应用了 mask 的 binary_image
+    cv::Mat masked_image;
+
+    // 经过 canny 处理的 masked_image
+    cv::Mat canny_image;
+
+    {// circle mask
+
+    // 轮廓的mask
+    cv::Mat mask(binary_image.size(),CV_8UC1,cv::Scalar(0));
+    
+    // 对应轮廓的最小圆中心
+    cv::Point2f center;
+    // 对应轮廓的最小圆半径
+    float radius;
+
+    cv::minEnclosingCircle(approxcurve,center,radius);
+
+    cv::circle(mask,cv::Point(center.x,center.y),radius,cv::Scalar(255),-1);
+
+    cv::copyTo(binary_image, masked_image, mask);
+
+    }
+
+    cv::Canny(masked_image, canny_image, CannyThreshold1, CannyThreshold2, CannyapertureSize);
+
+    Counters point_sets;
+    std::vector<std::pair<cv::Point,cv::Point> > end_points;
+    find_polygon_counter_points_sets(canny_image, approxcurve, PeaksIgnoreRadius, point_sets, end_points);
+
+    if(point_sets.size()!=6||end_points.size()!=6){
+        RCLCPP_ERROR(node_->get_logger(),"[getCounterCorners] size of point_sets or end_points != 6");
+        return false;
+    }
+
+    // cv::fitLine(LinesPoints[i],line,cv::DIST_L2,0,0.01,0.01);
+
+    // 符合sorted_end_points顺序的直线
+    std::vector<cv::Vec4d> sorted_fitted_lines(6);
+
+    // 拟合的直线
+    for(int i=0;i<6;i++){
+        cv::Vec4d line;
+        cv::fitLine(point_sets[i],line,cv::DIST_L2,0,0.01,0.01);
+
+        for(int e=0;e<6;e++){
+            if((sorted_end_points[e].first==end_points[i].first && sorted_end_points[e].second==end_points[i].second) ||
+                (sorted_end_points[e].second==end_points[i].first && sorted_end_points[e].first==end_points[i].second)){
+                sorted_fitted_lines[e]=line;
+                break;
+            }
+        }
+
+    }
+
+    
 
 }
 

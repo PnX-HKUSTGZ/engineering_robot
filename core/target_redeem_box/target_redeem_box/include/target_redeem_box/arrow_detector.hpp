@@ -100,14 +100,24 @@ protected:
      * @brief 从已经确定是六边形的轮廓中找出我们设定的8个点。
      * @brief 
      * @param counter 输入的箭头轮廓
+     * @param binary_image 输入的二值化图
      * @param gray_image 输入的灰度图
      * @param corners 输出的8个点，顺序为
      * 
      * @todo 注释
      */
     bool getCounterCorners(const Counter& counter, 
+        const cv::Mat& binary_image, 
         const cv::Mat& gray_image, 
         Counter2f& corners);
+
+    /**
+     * @brief 是一个辅助函数，按照设定的方式对箭头的顶点进行排序
+     * @param counter 输入的顶点，要求必须以顺时针或者逆时针排序
+     * @param end_points 按照一定顺序排列的边
+     * @todo 没写
+     */
+    void sortCorners(Counter& counter, std::vector<std::pair<cv::Point,cv::Point> > end_points);
 
 // 参数部分与运行时全局变量
 private:
@@ -146,6 +156,14 @@ private:
     double InitHorizonLeftThreshold;
     // 第二次轮廓筛选，二分查找的平行线的初始右边界
     double InitHorizonRightThreshold;
+    // canny函数的Threshold1
+    double CannyThreshold1;
+    // canny函数的Threshold2
+    double CannyThreshold2;
+    // canny函数的apertureSize
+    double CannyapertureSize;
+    // find_polygon_counter_points_sets 的顶点忽略范围
+    double PeaksIgnoreRadius;
 
     // 解算3D点配置
     std::vector<cv::Point3f> object_points;

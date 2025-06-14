@@ -93,5 +93,18 @@ void draw_pnp_result(cv::Mat image,
     cv::Point textpos,
     bool draw_xyz);
 
+/**
+ * @brief 函数会从binart_image中提取出多边形的每一条边的点集合
+ * @param binary_image 输入的二值化图像，这个图片应当是 `uchar` 或者 `CV_8UC1` 类型的，并且其中只有一个多边形轮廓
+ * @param peaks 输入的多边形的顶点
+ * @param peaks_ignore_radius 输入的多边形的顶点忽略半径
+ * @param point_sets 输出的多边形的每一条边的点集合
+ * @param end_points 输出的多边形的每一条边的端点
+ */
+void find_polygon_counter_points_sets(const cv::Mat & binary_image,
+    const std::vector<cv::Point> & peaks,
+    const double peaks_ignore_radius,
+    std::vector<std::vector<cv::Point>> & point_sets,
+    std::vector<std::pair<cv::Point,cv::Point> >& end_points);
 
 #endif
