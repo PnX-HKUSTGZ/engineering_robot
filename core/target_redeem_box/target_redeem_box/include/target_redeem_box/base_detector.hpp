@@ -6,6 +6,8 @@
 
 #include <yaml-cpp/yaml.h>
 
+#include <rclcpp/rclcpp.hpp>
+
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
@@ -77,8 +79,6 @@ protected:
 
 // 配置文件
 YAML::Node config;
-// 日志记录器
-rclcpp::Logger logger;
 // 调用Detector的节点
 rclcpp::Node::SharedPtr node_;
 // 名字
@@ -114,7 +114,7 @@ BaseDetector(const YAML::Node& config, const std::string & name);
 virtual bool detect(InputData input_data,
     DetectorOutput& output_data);
 
-virtual std::string const get_detector_name();
+virtual std::string const getDetectorName();
 
 using SharedPtr = std::shared_ptr<BaseDetector>;
 

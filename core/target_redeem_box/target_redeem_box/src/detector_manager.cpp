@@ -166,7 +166,7 @@ bool DetectorManager::init_detectors(){
 void DetectorManager::start_detect(){
     auto detect_function = [this](const std::shared_ptr<BaseDetector> detector){
         rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr detect_result_publisher=
-        this->create_publisher<std_msgs::msg::Int32>(detector->get_detector_name()+"_time_use",10);
+        this->create_publisher<std_msgs::msg::Int32>(detector->getDetectorName()+"_time_use",10);
         while(true){
             if(!rclcpp::ok()){
                 break;
@@ -180,7 +180,7 @@ void DetectorManager::start_detect(){
                 continue;
             }
             if(input_data->update_time-this->now() > this->input_data_time_out){
-                RCLCPP_WARN(this->get_logger(),"[%s] input data time out",detector->get_detector_name().c_str());
+                RCLCPP_WARN(this->get_logger(),"[%s] input data time out",detector->getDetectorName().c_str());
                 continue;
             }
             auto start_time = std::chrono::high_resolution_clock::now();
