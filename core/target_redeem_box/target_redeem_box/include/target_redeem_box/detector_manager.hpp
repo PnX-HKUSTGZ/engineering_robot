@@ -65,7 +65,7 @@ namespace Engineering_robot_Pnx{
  * @brief 目标检测管理器类
  * 
  */
-class DetectorManager : rclcpp::Node{
+class DetectorManager : public rclcpp::Node{
 private:
     // 配置文件
     YAML::Node config;
@@ -83,15 +83,16 @@ private:
 
     tf2_ros::Buffer::SharedPtr tf2_buffer_;
     std::shared_ptr<tf2_ros::TransformListener> tf2_listener_;
+    std::shared_ptr<tf2_ros::TransformBroadcaster> tf2_broadcaster_;
 
-    std::shared_ptr<message_filters::Subscriber<sensor_msgs::msg::Image>> image_subscriber;
+    std::shared_ptr<message_filters::Subscriber<sensor_msgs::msg::Image>> image_subscriber_;
     std::shared_ptr<message_filters::Subscriber<sensor_msgs::msg::PointCloud2>> point_cloud_subscriber_;
     std::shared_ptr<message_filters::Synchronizer<SyncPolicy>> synchronizer_;
 
     std::shared_ptr<rclcpp::Publisher<sensor_msgs::msg::Image>> posed_image_publisher_;
 
-    void image_point_cloud_callback(const sensor_msgs::msg::Image::SharedPtr& image_msg, 
-        const sensor_msgs::msg::PointCloud2::SharedPtr& point_cloud_msg);
+    void image_point_cloud_callback(const sensor_msgs::msg::Image::ConstSharedPtr& image_msg, 
+        const sensor_msgs::msg::PointCloud2::ConstSharedPtr& point_cloud_msg);
 
     void handle_detect_result(const DetectorOutput & output);
 
@@ -121,7 +122,7 @@ public:
     /**
      * @brief 构造函数
      */
-    DetectorManager();
+    DetectorManager(rclcpp::NodeOptions options);
 
 };
 

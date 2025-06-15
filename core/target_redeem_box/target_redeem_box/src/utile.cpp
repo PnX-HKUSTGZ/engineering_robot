@@ -127,7 +127,7 @@ void draw_pnp_result(cv::Mat image,
     };
 
     // 其次化转化过后的xyz轴
-    std::vector<Eigen::Matrix<double,3,1>>  image_xyz_axis_eigen;
+    std::vector<cv::Point>  image_xyz_axis_eigen;
 
     cv::Rodrigues(rvec,rmat);
 
@@ -319,4 +319,65 @@ cv::Vec4d get_line(const cv::Point_<T> & p1,const cv::Point_<T> & p2){
     double x0=p1.x;
     double y0=p1.y;
     return cv::Vec4d(vec.x,vec.y,x0,y0);
+}
+
+geometry_msgs::msg::Quaternion rotation_vector_to_quaternion(const cv::Mat& rotation_vector_mat)
+{
+    // 检查输入的 cv::Mat 是否有效且尺寸正确
+    if (rotation_vector_mat.empty() || rotation_vector_mat.total() != 3 || rotation_vector_mat.channels() != 1 || (rotation_vector_mat.depth() != CV_32F && rotation_vector_mat.depth() != CV_64F))
+    {
+        // 输入 Mat 无效，可以根据需要抛出异常或返回一个默认四元数
+        // 这里返回一个单位四元数作为示例
+        geometry_msgs::msg::Quaternion identity_quaternion;
+        identity_quaternion.x = 0.0;
+        identity_quaternion.y = 0.0;
+        identity_quaternion.z = 0.0;
+        identity_quaternion.w = 1.0;
+        // 可以在这里添加错误日志输出
+        // ROS_ERROR("Invalid input cv::Mat for rotation vector conversion.");
+        return identity_quaternion;
+    }
+
+    // 从 cv::Mat 中提取旋转向量分量
+    tf2::Vector3 axis;
+    if (rotation_vector_mat.type() == CV_32F) {
+        axis.setX(rotation_vector_mat.at<float>(0));
+        axis.setY(rotation_vector_mat.at<float>(1));
+        axis.setZ(rotation_vector_mat.at<float>(2));
+    } else { // CV_64F
+        axis.setX(rotation_vector_mat.at<double>(0));
+        axis.setY(rotation_vector_mat.at<double>(1));
+        axis.setZ(rotation_vector_mat.at<double>(2));
+    }
+
+
+    // 旋转向量的模长即为旋转角度
+    double angle = axis.length();
+
+    // 归一化旋转轴
+    if (angle > 1e-6) { // 避免除以零
+        axis.normalize();
+    } else {
+        // 如果旋转向量接近零，则表示没有旋转，返回单位四元数
+        geometry_msgs::msg::Quaternion identity_quaternion;
+        identity_quaternion.x = 0.0;
+        identity_quaternion.y = 0.0;
+        identity_quaternion.z = 0.0;
+        identity_quaternion.w = 1.0;
+        return identity_quaternion;
+    }
+
+    // 使用轴和角度创建 tf2::Quaternion
+    tf2::Quaternion quaternion;
+    quaternion.setRotation(axis, angle);
+
+    // 将 tf2::Quaternion 转换为 geometry_msgs::msg::Quaternion
+    geometry_msgs::msg::Quaternion ros_quaternion;
+
+    ros_quaternion.x=quaternion.getX();
+    ros_quaternion.y=quaternion.getY();
+    ros_quaternion.z=quaternion.getZ();
+    ros_quaternion.w=quaternion.getW();
+
+    return ros_quaternion;
 }

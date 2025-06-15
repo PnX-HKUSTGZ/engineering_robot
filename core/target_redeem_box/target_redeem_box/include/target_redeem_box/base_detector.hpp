@@ -45,14 +45,14 @@ namespace Engineering_robot_Pnx{
 struct InputData{
     rclcpp::Time update_time;
     const cv::Mat image;
-    const pcl::PointCloud<const pcl::PointXYZ>::Ptr point_cloud_=nullptr;
+    const pcl::PointCloud<pcl::PointXYZ>::ConstPtr point_cloud_=nullptr;
     
     /**
      * @brief 构造函数 复制对应变量
      */
     InputData(const rclcpp::Time& time_, 
         const cv::Mat& image_, 
-        const pcl::PointCloud<const pcl::PointXYZ>::Ptr pc_);
+        const pcl::PointCloud<pcl::PointXYZ>::ConstPtr pc_);
     
     using SharedPtr = std::shared_ptr<InputData>;
 

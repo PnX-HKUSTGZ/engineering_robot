@@ -7,6 +7,12 @@
 #include <yaml-cpp/yaml.h>
 
 #include <rclcpp/rclcpp.hpp>
+#include <geometry_msgs/msg/quaternion.hpp>
+#include <geometry_msgs/msg/vector3.hpp> 
+
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2/LinearMath/Vector3.h>
+#include <tf2/convert.h>
 
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
@@ -127,5 +133,12 @@ cv::Point2f get_intersection(const cv::Vec4d & line1, const cv::Vec4d & line2);
  */
 template<typename T>
 cv::Vec4d get_line(const cv::Point_<T> & p1,const cv::Point_<T> & p2);
+
+/**
+ * @brief 旋转向量转换为四元数
+ * @param rotation_vector_mat 旋转向量，1*3或者3*1的矩阵 并且是 CV_32F或者CV_64F
+ * @return geometry_msgs::msg::Quaternion 四元数 ，失败会直接返回一个无效四元数
+ */
+geometry_msgs::msg::Quaternion rotation_vector_to_quaternion(const cv::Mat& rotation_vector_mat);
 
 #endif

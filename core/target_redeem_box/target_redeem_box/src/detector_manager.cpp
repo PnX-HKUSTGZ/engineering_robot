@@ -4,11 +4,13 @@
 #include "target_redeem_box/retangle_detector.hpp"
 #include "target_redeem_box/arrow_detector_pcl.hpp"
 
+#include "rmw/qos_profiles.h" // For rmw_qos_profile_sensor_data
+
 #include <ament_index_cpp/get_package_share_directory.hpp>
 
 namespace Engineering_robot_Pnx{
 
-DetectorManager::DetectorManager() : rclcpp::Node("target_redeem_box_detector_manager",rclcpp::NodeOptions()){
+DetectorManager::DetectorManager(rclcpp::NodeOptions options) : rclcpp::Node("target_redeem_box_detector_manager",options){
     std::string package_name="target_redeem_box";
     std::string config_file_path;
     try{
@@ -39,16 +41,16 @@ DetectorManager::DetectorManager() : rclcpp::Node("target_redeem_box_detector_ma
 
     tf2_buffer_=std::make_shared<tf2_ros::Buffer>(this->get_clock());
     tf2_listener_=std::make_shared<tf2_ros::TransformListener>(*tf2_buffer_);
+    tf2_broadcaster_=std::make_shared<tf2_ros::TransformBroadcaster>(this);
 
     posed_image_publisher_=this->create_publisher<sensor_msgs::msg::Image>("colored_image",10);
     
-    image_subscriber=std::make_shared<message_filters::Subscriber<sensor_msgs::msg::Image>>(this,image_topic,10);
-    point_cloud_subscriber_=std::make_shared<message_filters::Subscriber<sensor_msgs::msg::PointCloud2>>(this,point_cloud_topic,10);
-    synchronizer_=std::make_shared<message_filters::Synchronizer<SyncPolicy>>(SyncPolicy(10), *image_subscriber, *point_cloud_subscriber_);
+    // 直接使用 rmw/qos_profiles.h 提供的 rmw_qos_profile_sensor_data 作为 qos 配置
+    image_subscriber_=std::make_shared<message_filters::Subscriber<sensor_msgs::msg::Image>>(this,image_topic,rmw_qos_profile_sensor_data);
+    point_cloud_subscriber_=std::make_shared<message_filters::Subscriber<sensor_msgs::msg::PointCloud2>>(this,point_cloud_topic,rmw_qos_profile_sensor_data);
+    synchronizer_=std::make_shared<message_filters::Synchronizer<SyncPolicy>>(SyncPolicy(10), *image_subscriber_, *point_cloud_subscriber_);
     synchronizer_->registerCallback(
-        [this](const sensor_msgs::msg::Image::SharedPtr& image_msg, const sensor_msgs::msg::PointCloud2::SharedPtr& point_cloud_msg){
-            this->image_point_cloud_callback(image_msg,point_cloud_msg);
-        }
+        std::bind(&DetectorManager::image_point_cloud_callback,this,std::placeholders::_1,std::placeholders::_2)
     );
 
     bool init_detectors_success=init_detectors();
@@ -60,8 +62,8 @@ DetectorManager::DetectorManager() : rclcpp::Node("target_redeem_box_detector_ma
 
 }
 
-void DetectorManager::image_point_cloud_callback(const sensor_msgs::msg::Image::SharedPtr& image_msg, 
-        const sensor_msgs::msg::PointCloud2::SharedPtr& point_cloud_msg){
+void DetectorManager::image_point_cloud_callback(const sensor_msgs::msg::Image::ConstSharedPtr& image_msg, 
+        const sensor_msgs::msg::PointCloud2::ConstSharedPtr& point_cloud_msg){
 
     // 转换图像
 
@@ -130,25 +132,25 @@ bool DetectorManager::init_detectors(){
                 detector_name);
             detectors.push_back(detector);
         }
-        else if(detector_type=="arrow_detector_pcl"){
-            std::shared_ptr<ArrowDetectorPCL> detector=std::make_shared<ArrowDetectorPCL>(
-                config_node,
-                detector_name);
-            detectors.push_back(detector);
-        }
-        else if(detector_type=="rectangle_detector"){
-            std::shared_ptr<RectangleDetector> detector=std::make_shared<RectangleDetector>(
-                config_node,
-                detector_name);
-            detectors.push_back(detector);
-        }
+        // else if(detector_type=="arrow_detector_pcl"){
+        //     std::shared_ptr<ArrowDetectorPCL> detector=std::make_shared<ArrowDetectorPCL>(
+        //         config_node,
+        //         detector_name);
+        //     detectors.push_back(detector);
+        // }
+        // else if(detector_type=="rectangle_detector"){
+        //     std::shared_ptr<RectangleDetector> detector=std::make_shared<RectangleDetector>(
+        //         config_node,
+        //         detector_name);
+        //     detectors.push_back(detector);
+        // }
         else{
             RCLCPP_ERROR(this->get_logger(),"[init_detectors] get detector type error, get %s. skip",detector_type.c_str());
         }
     }
 
-    if(detectors.size()!=detector_num){
-        RCLCPP_FATAL(this->get_logger(),"[init_detectors] init detectors error, not all detectors init success, init %d, get %d",detectors.size(),detector_num);
+    if(detectors.size()!=std::size_t(detector_num)){
+        RCLCPP_FATAL(this->get_logger(),"[init_detectors] init detectors error, not all detectors init success, init %ld, get %d",detectors.size(),detector_num);
         return false;
     }
     }
@@ -158,7 +160,7 @@ bool DetectorManager::init_detectors(){
         return false;
     }
 
-    RCLCPP_INFO(this->get_logger(),"[init_detectors] init detectors success, init %d",detectors.size());
+    RCLCPP_INFO(this->get_logger(),"[init_detectors] init detectors success, init %ld",detectors.size());
     return true;
 
 }
@@ -186,12 +188,18 @@ void DetectorManager::start_detect(){
             auto start_time = std::chrono::high_resolution_clock::now();
             DetectorOutput output;
             bool detect_success=detector->detect(*input_data,output);
-            auto end_time = std::chrono::high_resolution_clock::now();
-            auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
-            std_msgs::msg::Int32 time_use_msg;
-            time_use_msg.data=duration.count();
-            detect_result_publisher->publish(time_use_msg);
-            handle_detect_result(output);
+            if(detect_success){
+                auto end_time = std::chrono::high_resolution_clock::now();
+                auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
+                std_msgs::msg::Int32 time_use_msg;
+                time_use_msg.data=duration.count();
+                detect_result_publisher->publish(time_use_msg);
+                handle_detect_result(output);
+                RCLCPP_INFO(this->get_logger(),"[%s] detect success, time use %ld us",detector->getDetectorName().c_str(),duration.count());
+            }
+            else{
+                RCLCPP_INFO(this->get_logger(),"[%s] detect fail",detector->getDetectorName().c_str());
+            }
         }
     };
 
@@ -199,7 +207,25 @@ void DetectorManager::start_detect(){
         detect_threads.push_back(std::thread(detect_function,detector));
     }
 
-    RCLCPP_INFO(this->get_logger(),"[start_detect] start detect %d",detectors.size());
+    RCLCPP_INFO(this->get_logger(),"[start_detect] start detect %ld",detectors.size());
+}
+
+void DetectorManager::handle_detect_result(const DetectorOutput & output){
+    if(output.result_image_){
+        sensor_msgs::msg::Image::SharedPtr image_msg=cv_bridge::CvImage(std_msgs::msg::Header(),"bgr8",*output.result_image_).toImageMsg();
+        posed_image_publisher_->publish(*image_msg);
+    }
+
+    geometry_msgs::msg::TransformStamped transform_stamped;
+    transform_stamped.header.stamp = this->now();
+    transform_stamped.header.frame_id = image_frame;
+    transform_stamped.child_frame_id = "object/redeem_box";
+    transform_stamped.transform.translation.x = output.tvec.at<double>(0);
+    transform_stamped.transform.translation.y = output.tvec.at<double>(1);
+    transform_stamped.transform.translation.z = output.tvec.at<double>(2);
+    transform_stamped.transform.rotation = rotation_vector_to_quaternion(output.rvec);
+    tf2_broadcaster_->sendTransform(transform_stamped);
+
 }
 
 }

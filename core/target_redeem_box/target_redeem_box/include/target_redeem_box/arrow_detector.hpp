@@ -175,7 +175,7 @@ private:
     // 相机曲变参数
     std::vector<double> dist_coeffs;
 
-    static const double eps = 1e-8;
+    static constexpr double eps = 1e-8;
 
 };
 

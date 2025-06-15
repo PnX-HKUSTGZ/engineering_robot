@@ -4,7 +4,7 @@ namespace Engineering_robot_Pnx{
 
 InputData::InputData(const rclcpp::Time& time_, 
     const cv::Mat& image_, 
-    const pcl::PointCloud<const pcl::PointXYZ>::Ptr pc_):
+    const pcl::PointCloud<pcl::PointXYZ>::ConstPtr pc_):
     update_time(time_),
     image(image_),
     point_cloud_(pc_)

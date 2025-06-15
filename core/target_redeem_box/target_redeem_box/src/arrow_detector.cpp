@@ -172,7 +172,7 @@ bool ArrowDetector::findCandidateContour(const cv::Mat& binary_image, const cv::
     std::mutex second_counters_mutex;
 
     #pragma omp parallel for
-    for(int i=0;i<first_counters.size();i++){
+    for(std::size_t i=0;i<first_counters.size();i++){
         // 储存每一个直线的点的索引以及角度
         std::vector<Slope> slopes;
 
@@ -245,7 +245,7 @@ bool ArrowDetector::findCandidateContour(const cv::Mat& binary_image, const cv::
     int max_pixel=0;
     int max_pixel_index=0;
 
-    for(int i=0;i<second_counters_size.size();i++){
+    for(std::size_t i=0;i<second_counters_size.size();i++){
         if(second_counters_size[i]>max_pixel){
             max_pixel=second_counters_size[i];
             max_pixel_index=i;
@@ -253,7 +253,7 @@ bool ArrowDetector::findCandidateContour(const cv::Mat& binary_image, const cv::
     }
 
     counter=second_counters[max_pixel_index];
-    RCLCPP_INFO(node_->get_logger(), "[findCandidateContour] find %d contours success!",second_counters.size());
+    RCLCPP_INFO(node_->get_logger(), "[findCandidateContour] find %ld contours success!",second_counters.size());
 
 }
 
