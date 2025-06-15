@@ -107,4 +107,25 @@ void find_polygon_counter_points_sets(const cv::Mat & binary_image,
     std::vector<std::vector<cv::Point>> & point_sets,
     std::vector<std::pair<cv::Point,cv::Point> >& end_points);
 
+
+/**
+ * @brief 计算两条线的交点
+ * @brief 对于直线的定义 In case of 2D fitting, it should be a vector of 4 elements (like Vec4f) - (vx, vy, x0, y0), where (vx, vy) is a normalized vector collinear to the line and (x0, y0) is a point on the line. In case of 3D fitting, it should be a vector of 6 elements (like Vec6f) - (vx, vy, vz, x0, y0, z0), where (vx, vy, vz) is a normalized vector collinear to the line and (x0, y0, z0) is a point on the line.
+ * @param line1 第一条直线
+ * @param line2 第二条直线
+ * @return cv::Point2f 交点
+ * @brief 注意，如果有平行的情况会抛出错误
+ */
+cv::Point2f get_intersection(const cv::Vec4d & line1, const cv::Vec4d & line2);
+
+/**
+ * @brief 得到两个点之间的直线
+ * @tparam T 点的类型
+ * @param p1 第一个点
+ * @param p2 第二个点
+ * @return cv::Vec4d 直线 对于直线的定义 In case of 2D fitting, it should be a vector of 4 elements (like Vec4f) - (vx, vy, x0, y0), where (vx, vy) is a normalized vector collinear to the line and (x0, y0) is a point on the line. In case of 3D fitting, it should be a vector of 6 elements (like Vec6f) - (vx, vy, vz, x0, y0, z0), where (vx, vy, vz) is a normalized vector collinear to the line and (x0, y0, z0) is a point on the line.
+ */
+template<typename T>
+cv::Vec4d get_line(const cv::Point_<T> & p1,const cv::Point_<T> & p2);
+
 #endif

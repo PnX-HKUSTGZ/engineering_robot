@@ -203,3 +203,6 @@ void DetectorManager::start_detect(){
 }
 
 }
+
+#include "rclcpp_components/register_node_macro.hpp"
+RCLCPP_COMPONENTS_REGISTER_NODE(Engineering_robot_Pnx::DetectorManager)

@@ -264,24 +264,18 @@ bool ArrowDetector::targetArrow(const cv::Mat & binary_image, const cv::Mat & gr
         return false;
     }
 
-    cv::drawContours(colored_image,Counters{candidate_counter},-1,cv::Scalar(432,32,255),2);
+    cv::drawContours(colored_image,Counters{candidate_counter},-1,cv::Scalar(200,32,255),2);
 
     // 直线拟合阶段
 
+    if(!getCounterCorners(candidate_counter,binary_image,gray_image,corners)){
+        RCLCPP_INFO(node_->get_logger(), "[targetArrow] get counter corners fail!");
+        return false;
+    }
 
-
-    // Counter2f subpix_counter;
-
-    // for(int i=0;i<candidate_counter.size();i++){
-    //     subpix_counter.push_back(cv::Point2f(candidate_counter[i].x,candidate_counter[i].y));
-    // }
-
-    // cv::TermCriteria cornerSubPix_criteria;
-    // cv::cornerSubPix(gray_image,subpix_counter,cv::Size(5,5),cv::Size(-1,-1),cornerSubPix_criteria);
-
-    // corners=subpix_counter;
-
-    // RCLCPP_INFO(node_->get_logger(), "[targetArrow] find corners success!");
+    for(auto & corner : corners){
+        cv::circle(colored_image,corner,1,cv::Scalar(123,32,176),-1);
+    }
 
     return true;
 
@@ -340,7 +334,7 @@ bool ArrowDetector::getCounterCorners(const Counter& counter,
     // 符合sorted_end_points顺序的直线
     std::vector<cv::Vec4d> sorted_fitted_lines(6);
 
-    // 拟合的直线
+    // 拟合的直线，并且将其放在对应的位置
     for(int i=0;i<6;i++){
         cv::Vec4d line;
         cv::fitLine(point_sets[i],line,cv::DIST_L2,0,0.01,0.01);
@@ -355,7 +349,68 @@ bool ArrowDetector::getCounterCorners(const Counter& counter,
 
     }
 
+    // 每个点对应的两条直线
+    // 点的顺序是 见 readme.md
+    const static std::vector<std::pair<int,int>> line_point_map={
+        std::make_pair(0,1),
+        std::make_pair(2,3),
+        std::make_pair(0,4),
+        std::make_pair(2,4),
+        std::make_pair(1,5),
+        std::make_pair(3,5),
+        std::make_pair(0,3),
+        std::make_pair(1,2)
+    };
+
+    // 每个直线对应的两个点，只是用前6个点
+    // 顺序见 readme.md
+    const static std::vector<std::pair<int,int>> point_line_map={
+        std::make_pair(0,2),
+        std::make_pair(0,4),
+        std::make_pair(1,3),
+        std::make_pair(1,5),
+        std::make_pair(2,3),
+        std::make_pair(4,5)
+    };
+
+    // 箭头的初始的6个角点
+    Counter2f first_corners;
+
+    for(int i=0;i<6;i++){
+        first_corners.push_back(get_intersection(sorted_fitted_lines[line_point_map[i].first],sorted_fitted_lines[line_point_map[i].second]));
+    }
+
+    // 使用 SubPix 对 first_corners 进行优化
+
+    // 优化过后的6个焦点角点
+    Counter2f subpix_corners;
+    // 优化后的6条直线
+    std::vector<cv::Vec4f> subpix_lines;
+
+    for(int i=0;i<6;i++){
+        subpix_corners.push_back(cv::Point2f(first_corners[i].x,first_corners[i].y));
+    }
+
+    cv::TermCriteria cornerSubPix_criteria;
+    cv::cornerSubPix(gray_image,subpix_corners,cv::Size(5,5),cv::Size(-1,-1),cornerSubPix_criteria);
+
+    for(int i=0;i<6;i++){        
+        subpix_lines.push_back(get_line(subpix_corners[point_line_map[i].first],subpix_corners[point_line_map[i].second]));
+    }
+
+    // 画出直线
+
+    for(int i=0;i<6;i++){
+        cv::line(colored_image,subpix_corners[point_line_map[i].first],subpix_corners[point_line_map[i].second],cv::Scalar(255,255,255),2);
+    }
     
+    for(int i=6;i<8;i++){
+        subpix_corners.push_back(get_intersection(subpix_lines[line_point_map[i].first],subpix_lines[line_point_map[i].second]));
+    }
+
+    corners=subpix_corners;
+
+    return true;
 
 }
 
@@ -401,6 +456,55 @@ bool ArrowDetector::detect(InputData input_data, DetectorOutput& output_data){
     output_data.rvec=rvec;
     output_data.tvec=tvec;
     return true;
+}
+
+bool ArrowDetector::loadConfig(){
+    try{
+    BinaryThresholdThresh=config["BinaryThresholdThresh"].as<int>();
+    BinaryThresholdMaxval=config["BinaryThresholdMaxval"].as<int>();
+    approxPolyDPEpsilon=config["approxPolyDPEpsilon"].as<double>();
+    LongShortRateMin=config["LongShortRateMin"].as<double>();
+    LongShortRateMax=config["LongShortRateMax"].as<double>();
+    PixelNumMin=config["PixelNumMin"].as<int>();
+    PixelNumMax=config["PixelNumMax"].as<int>();
+    RectLengthWidthRatioMin=config["RectLengthWidthRatioMin"].as<double>();
+    RectLengthWidthRatioMax=config["RectLengthWidthRatioMax"].as<double>();
+    ApproxcurveSizeMin=config["ApproxcurveSizeMin"].as<int>();
+    ApproxcurveSizeMax=config["ApproxcurveSizeMax"].as<int>();
+    InitHorizonLeftThreshold=config["InitHorizonLeftThreshold"].as<int>();
+    InitHorizonRightThreshold=config["InitHorizonRightThreshold"].as<int>();
+    CannyThreshold1=config["CannyThreshold1"].as<int>();
+    CannyThreshold2=config["CannyThreshold2"].as<int>();
+    CannyapertureSize=config["CannyapertureSize"].as<int>();
+    PeaksIgnoreRadius=config["PeaksIgnoreRadius"].as<double>();
+
+    YAML::Node object_points_yaml=config["object_points"];
+    for(int i=0;i<8;i++){
+        object_points.push_back(cv::Point3f(object_points_yaml[i][0].as<double>(),object_points_yaml[i][1].as<double>(),object_points_yaml[i][2].as<double>()));
+    }
+
+    YAML::Node redeem_front_points_yaml=config["redeem_front_points"];
+    for(int i=0;i<4;i++){
+        redeem_front_points.push_back(cv::Point3f(redeem_front_points_yaml[i][0].as<double>(),redeem_front_points_yaml[i][1].as<double>(),redeem_front_points_yaml[i][2].as<double>()));
+    }
+
+    camera_matrix=config["camera_matrix"].as<std::vector<double>>();
+    if(camera_matrix.size()!=9){
+        RCLCPP_ERROR(node_->get_logger(),"[loadConfig] camera_matrix size error!");
+        return false;
+    }
+
+    dist_coeffs=config["dist_coeffs"].as<std::vector<double>>();
+    if(dist_coeffs.size()!=5){
+        RCLCPP_ERROR(node_->get_logger(),"[loadConfig] dist_coeffs size error!");
+        return false;
+    }
+
+    }
+    catch(const YAML::Exception& e){
+        RCLCPP_ERROR(node_->get_logger(),"[loadConfig] load config fail! %s",e.what());
+        return false;
+    }
 }
 
 }// Engineering_robot_Pnx

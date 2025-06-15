@@ -13,6 +13,7 @@ typedef std::vector<cv::Point2d> Counter2d;
 typedef std::vector<std::vector<cv::Point2f>> Counter2fs;
 typedef std::vector<cv::Point2f> Counter2f;
 
+
 /**
  * @brief 用于存储一条线的信息
  * 
@@ -97,7 +98,7 @@ protected:
         Counter& counter);
 
     /**
-     * @brief 从已经确定是六边形的轮廓中找出我们设定的8个点。
+     * @brief 从已经确定是六边形的轮廓中找出我们设定的8个点。并且会使用subpixel进行优化
      * @brief 
      * @param counter 输入的箭头轮廓
      * @param binary_image 输入的二值化图
@@ -165,8 +166,10 @@ private:
     // find_polygon_counter_points_sets 的顶点忽略范围
     double PeaksIgnoreRadius;
 
-    // 解算3D点配置
+    // 解算3D点配置，8个点
     std::vector<cv::Point3f> object_points;
+    // 兑换框正面四个点
+    std::vector<cv::Point3f> redeem_front_points;
     // 相机内参
     std::vector<double> camera_matrix;
     // 相机曲变参数

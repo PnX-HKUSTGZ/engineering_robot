@@ -2,73 +2,72 @@ cmake_minimum_required(VERSION 3.8)
 project(target_redeem_box)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic -std=c++17) # Use C++17
+  add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
+add_compile_options(-O2)
+
+include_directories("/opt/ros/humble/include/**")
+include_directories("/usr/include/pcl-1.12/")
+include_directories("/usr/include/eigen3/")
+include_directories("/usr/include/opencv4/")
+
 # find dependencies
+find_package(cv_bridge REQUIRED)
+find_package(OpenCV REQUIRED)
+
+find_package(sensor_msgs REQUIRED)
+
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(sensor_msgs REQUIRED)
-find_package(message_filters REQUIRED)
+find_package(rclcpp_components REQUIRED)
+
 find_package(tf2_ros REQUIRED)
+find_package(tf2_sensor_msgs REQUIRED)
 find_package(tf2 REQUIRED)
-find_package(tf2_geometry_msgs REQUIRED)
-find_package(yaml_cpp_vendor REQUIRED) # Use yaml_cpp_vendor for YAML
-find_package(OpenCV REQUIRED) # Find OpenCV
-find_package(PCL REQUIRED) # Find PCL
-find_package(cv_bridge REQUIRED) # Find cv_bridge
-find_package(pcl_conversions REQUIRED) # Find pcl_conversions
-find_package(ament_index_cpp REQUIRED) # Find ament_index_cpp
 
-# Include directories
-include_directories(
-  include
-  ${OpenCV_INCLUDE_DIRS}
-  ${PCL_INCLUDE_DIRS}
-)
+find_package(Eigen3 3.3 REQUIRED NO_MODULE)
+find_package(yaml-cpp REQUIRED)
+find_package(pcl_conversions REQUIRED)
 
-# Source files
-set(SOURCES
-  src/DetectionOrchestratorNode.cpp
-  src/RectangleDetector.cpp
-  # Add other detector source files here as they are created
-)
+include_directories(${PROJECT_SOURCE_DIR}/include)
+include_directories(${PROJECT_SOURCE_DIR}/../..)  # Add project root directory
+include_directories(/usr/include/eigen3)
 
-# Add executable
-add_executable(${PROJECT_NAME}_node ${SOURCES})
+file(GLOB_RECURSE SOURCES "src/*.cpp")
 
-# Link libraries
-ament_target_dependencies(${PROJECT_NAME}_node
+message(${SOURCES})
+
+add_library(RedeemBox_detector SHARED ${SOURCES})
+
+ament_target_dependencies(RedeemBox_detector
   rclcpp
-  sensor_msgs
-  message_filters
-  tf2_ros
-  tf2
-  tf2_geometry_msgs
-  yaml_cpp_vendor
   OpenCV
-  PCL
+  sensor_msgs
   cv_bridge
+  rclcpp_components
+  Eigen3
+  tf2_ros
   pcl_conversions
-  ament_index_cpp
+  tf2
+  tf2_sensor_msgs
 )
 
-# Install files
-install(TARGETS ${PROJECT_NAME}_node
-  DESTINATION lib/${PROJECT_NAME}
+target_link_libraries(RedeemBox_detector yaml-cpp::yaml-cpp)
+
+rclcpp_components_register_node(
+  RedeemBox_detector
+  PLUGIN "Engineering_robot_Pnx::DetectorManager"
+  EXECUTABLE RedeemBox_detector_node
 )
 
-# Install launch file
-install(DIRECTORY launch/
-  DESTINATION share/${PROJECT_NAME}
+install(TARGETS RedeemBox_detector
+        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION lib
+        RUNTIME DESTINATION bin
 )
 
-# Install config file
-install(DIRECTORY config/
-  DESTINATION share/${PROJECT_NAME}
-)
-
-
+install(DIRECTORY config DESTINATION share/${PROJECT_NAME})
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   # the following line skips the linter which checks for copyrights

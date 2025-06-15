@@ -106,7 +106,7 @@ void draw_pnp_result(cv::Mat image,
     // object_points 的 eigen 版本
     std::vector<Eigen::Matrix<double,4,1>> object_points_eigen;
     for(const auto & i : object_points){
-        object_points_eigen.push_back(Eigen::Matrix<double,3,1>(i.x,i.y,i.z,1));
+        object_points_eigen.push_back(Eigen::Matrix<double,4,1>(i.x,i.y,i.z,1));
     }
 
     // 降维矩阵
@@ -286,4 +286,37 @@ void find_polygon_counter_points_sets(const cv::Mat & binary_image,
         }
     }
 
+}
+
+cv::Point2f get_intersection(const cv::Vec4d & line1, const cv::Vec4d & line2){
+
+    double vx,vy,vx1,vy1,x0,x1,y0,y1;
+    vx=line1[0];
+    vy=line1[1];
+    vx1=line2[0];
+    vy1=line2[1];
+    x0=line1[2];
+    y0=line1[3];
+    x1=line2[2];
+    y1=line2[3];
+
+    double det=vx*vy1-vx1*vy;
+    if(std::abs(det)<=eps){
+        RCLCPP_ERROR(rclcpp::get_logger("get_intersection"),"Lines are parallel");
+        throw std::runtime_error("Lines are parallel");
+    }
+
+    double a2=(vy*(x0-x1)-vx*(y0-y1))/det;
+
+    return cv::Point2f(x1+a2*vx1,y1+a2*vy1);
+
+}
+
+template<typename T>
+cv::Vec4d get_line(const cv::Point_<T> & p1,const cv::Point_<T> & p2){
+    cv::Point_<T> vec=p2-p1;
+    vec=vec/cv::norm(vec);
+    double x0=p1.x;
+    double y0=p1.y;
+    return cv::Vec4d(vec.x,vec.y,x0,y0);
 }
