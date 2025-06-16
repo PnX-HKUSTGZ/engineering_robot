@@ -14,8 +14,8 @@ std::string const BaseDetector::getDetectorName(){
     return "BaseDetector";
 }
 
-BaseDetector::BaseDetector(const YAML::Node& config, const std::string & name){
-    BaseDetector(config, std::shared_ptr<rclcpp::Node>(new rclcpp::Node(name)),name);
+BaseDetector::BaseDetector(const YAML::Node& config, const std::string & name):
+    BaseDetector(config, std::shared_ptr<rclcpp::Node>(new rclcpp::Node(name)),name){
 }
 
 BaseDetector::BaseDetector(const YAML::Node& config, rclcpp::Node::SharedPtr node, const std::string & name):
@@ -24,5 +24,6 @@ BaseDetector::BaseDetector(const YAML::Node& config, rclcpp::Node::SharedPtr nod
     name(name){
 }
 
+BaseDetector::~BaseDetector(){}
 
 }// Engineering_robot_Pnx

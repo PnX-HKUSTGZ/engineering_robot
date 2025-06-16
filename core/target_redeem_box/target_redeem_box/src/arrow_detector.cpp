@@ -5,6 +5,10 @@
 
 namespace Engineering_robot_Pnx{
 
+std::string const ArrowDetector::getDetectorName(){
+    return "ArrowDetector";
+}
+
 ArrowDetector::ArrowDetector(const YAML::Node& config, 
         rclcpp::Node::SharedPtr node, 
         const std::string & name)
@@ -255,6 +259,7 @@ bool ArrowDetector::findCandidateContour(const cv::Mat& binary_image, const cv::
     counter=second_counters[max_pixel_index];
     RCLCPP_INFO(node_->get_logger(), "[findCandidateContour] find %ld contours success!",second_counters.size());
 
+    return true;
 }
 
 bool ArrowDetector::targetArrow(const cv::Mat & binary_image, const cv::Mat & gray_image, Counter2f& corners){
@@ -581,7 +586,6 @@ bool ArrowDetector::sortCorners(Counter& counter, std::vector<std::pair<cv::Poin
 
     // counter中最外侧点的index
     int top_point_index_counter=-1;
-    int top_point_index_triangle=-1;
 
     // 通过叉乘判断
     for(int i=0;i<3;i++){
@@ -590,7 +594,6 @@ bool ArrowDetector::sortCorners(Counter& counter, std::vector<std::pair<cv::Poin
         cv::Point2f cross_vec2=triangle[(i+2)%3]-center;
 
         if(main_vec.cross(cross_vec1)*main_vec.cross(cross_vec2)<0){
-            top_point_index_triangle=i;
             top_point_index_counter=point_pairs[i].first;
             answer_counter[0]=counter[top_point_index_counter];
             if(main_vec.cross(cross_vec1)<=0){
@@ -631,6 +634,8 @@ bool ArrowDetector::sortCorners(Counter& counter, std::vector<std::pair<cv::Poin
     }
 
     counter=answer_counter;
+
+    return true;
 
 }
 
@@ -675,5 +680,7 @@ geometry_msgs::msg::TransformStamped ArrowDetector::reverseTransforme(
 
     return transform_A_to_B;
 }
+
+ArrowDetector::~ArrowDetector(){}
 
 }// Engineering_robot_Pnx

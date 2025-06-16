@@ -89,6 +89,11 @@ public:
 BaseDetector() = delete;
 
 /**
+ * @brief 析构函数
+ */
+virtual ~BaseDetector();
+
+/**
  * @brief 构造函数
  * @param config 配置文件
  * @param node 随便给个node，记得是要已经初始化完成的
@@ -112,7 +117,7 @@ BaseDetector(const YAML::Node& config, const std::string & name);
  * 注意错误处理
  */
 virtual bool detect(InputData input_data,
-    DetectorOutput& output_data);
+    DetectorOutput& output_data) = 0;
 
 virtual std::string const getDetectorName();
 

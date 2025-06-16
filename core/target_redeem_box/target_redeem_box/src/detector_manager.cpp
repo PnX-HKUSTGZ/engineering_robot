@@ -60,6 +60,9 @@ DetectorManager::DetectorManager(rclcpp::NodeOptions options) : rclcpp::Node("ta
     }
     RCLCPP_INFO(this->get_logger(),"init detectors success");
 
+    start_detect();
+    RCLCPP_INFO(this->get_logger(),"start detect");
+
 }
 
 void DetectorManager::image_point_cloud_callback(const sensor_msgs::msg::Image::ConstSharedPtr& image_msg, 

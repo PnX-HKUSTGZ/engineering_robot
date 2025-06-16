@@ -49,6 +49,8 @@ public:
 
     std::string const getDetectorName() override;
 
+    virtual ~ArrowDetector();
+
 protected:
     /**
      * @brief 目标检测函数
