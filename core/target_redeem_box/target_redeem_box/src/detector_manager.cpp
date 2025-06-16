@@ -242,12 +242,12 @@ void DetectorManager::start_detect(){
             bool detect_success=detector->detect(*input_data,output);
             if(detect_success){
                 auto end_time = std::chrono::high_resolution_clock::now();
-                auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
+                auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
                 std_msgs::msg::Int32 time_use_msg;
                 time_use_msg.data=duration.count();
                 detect_result_publisher->publish(time_use_msg);
                 handle_detect_result(output);
-                RCLCPP_INFO(this->get_logger(),"[%s] detect success, time use %ld us",detector->getDetectorName().c_str(),duration.count());
+                RCLCPP_INFO(this->get_logger(),"[%s] detect success, time use %ld ms",detector->getDetectorName().c_str(),duration.count());
             }
             else{
                 RCLCPP_INFO(this->get_logger(),"[%s] detect fail",detector->getDetectorName().c_str());

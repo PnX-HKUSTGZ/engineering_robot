@@ -157,4 +157,23 @@ cv::Mat quaternion_to_rotation_vector(const geometry_msgs::msg::Quaternion& quat
  */
 template <typename T>
 double distance_point_line(const cv::Point_<T>& point, const cv::Vec4d& line);
+
+/**
+ * @brief 绘制一条直线，无限长
+ * @param image 输入图像
+ * @param line 直线 对于直线的定义 In case of 2D fitting, it should be a vector of 4 elements (like Vec4f) - (vx, vy, x0, y0), where (vx, vy) is a normalized vector collinear to the line and (x0, y0) is a point on the line. In case of 3D fitting, it should be a vector of 6 elements (like Vec6f) - (vx, vy, vz, x0, y0, z0), where (vx, vy, vz) is a normalized vector collinear to the line and (x0, y0, z0) is a point on the line. 
+ * @param color 颜色
+ * @param thickness 线宽
+ */
+void draw_line(cv::Mat& image,const cv::Vec4d& line,cv::Scalar color,int thickness);
+
+/**
+ * @brief 绘制一条直线，无限长
+ * @param image 输入图像
+ * @param lines 直线 对于直线的定义 In case of 2D fitting, it should be a vector of 4 elements (like Vec4f) - (vx, vy, x0, y0), where (vx, vy) is a normalized vector collinear to the line and (x0, y0) is a point on the line. In case of 3D fitting, it should be a vector of 6 elements (like Vec6f) - (vx, vy, vz, x0, y0, z0), where (vx, vy, vz) is a normalized vector collinear to the line and (x0, y0, z0) is a point on the line. 
+ * @param color 颜色
+ * @param thickness 线宽
+ */
+void draw_lines(cv::Mat& image,const std::vector<cv::Vec4d>& lines,cv::Scalar color,int thickness);
+
 #endif

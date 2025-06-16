@@ -279,11 +279,9 @@ bool ArrowDetector::targetArrow(const cv::Mat & binary_image, const cv::Mat & gr
     RCLCPP_INFO(node_->get_logger(), "[targetArrow] find candidate contours success!");
 
 
-    cv::drawContours(colored_image,Counters{candidate_counter},-1,cv::Scalar(200,32,255),2);
+    cv::drawContours(colored_image,Counters{candidate_counter},-1,cv::Scalar(200,32,255),1);
 
     // 直线拟合阶段
-
-    RCLCPP_INFO(node_->get_logger(), "[targetArrow] start line fit!");
 
     try{
         if(!getCounterCorners(candidate_counter,binary_image,gray_image,corners)){
@@ -310,7 +308,9 @@ bool ArrowDetector::getCounterCorners(const Counter& counter,
     const cv::Mat& gray_image,
     Counter2f& corners){
 
+    // 多边形拟合结果
     Counter approxcurve;
+    // 按照规则排序后的每条边对应的顶点
     std::vector<std::pair<cv::Point,cv::Point> > sorted_end_points;
 
     try{
@@ -398,6 +398,13 @@ bool ArrowDetector::getCounterCorners(const Counter& counter,
         }
 
     }
+
+    // 画出拟合的直线
+    draw_lines(colored_image,sorted_fitted_lines,cv::Scalar(255,255,255),1);
+    for(int i=0;i<6;i++){
+        cv::putText(colored_image,std::to_string(i),cv::Point(sorted_fitted_lines[i][2],sorted_fitted_lines[i][3]),cv::FONT_HERSHEY_SIMPLEX,1,cv::Scalar(0,255,255),2);
+    }
+
     // 每个点对应的两条直线
     // 点的顺序是 见 readme.md
     const static std::vector<std::pair<int,int>> line_point_map={
@@ -441,6 +448,7 @@ bool ArrowDetector::getCounterCorners(const Counter& counter,
     }
 
     cv::TermCriteria cornerSubPix_criteria;
+    cornerSubPix_criteria.maxCount=1000;
     cv::cornerSubPix(gray_image,subpix_corners,cv::Size(5,5),cv::Size(-1,-1),cornerSubPix_criteria);
 
     for(int i=0;i<6;i++){        
@@ -450,7 +458,7 @@ bool ArrowDetector::getCounterCorners(const Counter& counter,
     // 画出直线
 
     for(int i=0;i<6;i++){
-        cv::line(colored_image,subpix_corners[point_line_map[i].first],subpix_corners[point_line_map[i].second],cv::Scalar(255,255,255),2);
+        cv::line(colored_image,subpix_corners[point_line_map[i].first],subpix_corners[point_line_map[i].second],cv::Scalar(32,155,125),1);
     }
     
     for(int i=6;i<8;i++){
@@ -552,7 +560,7 @@ bool ArrowDetector::detect(InputData input_data, DetectorOutput& output_data){
 
     // 画出结果
 
-    for(int i=0;i<6;i++){
+    for(int i=0;i<8;i++){
         cv::circle(colored_image,corners[i],1,cv::Scalar(123,32,176),-1);
         cv::putText(colored_image,std::to_string(i),corners[i],cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(32,132,146),2);
     }
@@ -696,7 +704,7 @@ bool ArrowDetector::sortCorners(Counter& counter, std::vector<std::pair<cv::Poin
         cv::Point2f main_vec=triangle[top_point_index_triangle]-center;
         cv::Point2f cross_vec=triangle[(top_point_index_triangle+1)%3]-center;
         answer_counter[0]=counter[top_point_index_counter];
-        if(main_vec.cross(cross_vec)<=0){
+        if(main_vec.cross(cross_vec)>=0){
             answer_counter[4]=counter[point_pairs[(top_point_index_triangle+1)%3].first];
             answer_counter[2]=counter[point_pairs[(top_point_index_triangle+2)%3].first];
         }

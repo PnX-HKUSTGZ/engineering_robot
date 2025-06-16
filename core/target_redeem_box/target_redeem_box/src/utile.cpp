@@ -217,8 +217,6 @@ void find_polygon_counter_points_sets(const cv::Mat & binary_image,
     const double peaks_ignore_radius,
     std::vector<std::vector<cv::Point>> & points_sets,
     std::vector<std::pair<cv::Point,cv::Point> >& end_points){
-
-    cv::imshow("find_polygon_counter_points_sets binary_image",binary_image);
     
     // x上的位移
     static int dx[8]={0,0,1,-1,1,-1,1,-1};
@@ -295,25 +293,25 @@ void find_polygon_counter_points_sets(const cv::Mat & binary_image,
 
 cv::Point2f get_intersection(const cv::Vec4d & line1, const cv::Vec4d & line2){
 
-    double vx,vy,vx1,vy1,x0,x1,y0,y1;
-    vx=line1[0];
-    vy=line1[1];
-    vx1=line2[0];
-    vy1=line2[1];
-    x0=line1[2];
-    y0=line1[3];
-    x1=line2[2];
-    y1=line2[3];
+    double a1=line1[0],b1=line1[1],x1=line1[2],y1=line1[3];
+    double a2=line2[0],b2=line2[1],x2=line2[2],y2=line2[3];
 
-    double det=vx*vy1-vx1*vy;
-    if(std::abs(det)<=eps){
+    if(abs(a1*b2-a2*b1)<=eps){
         RCLCPP_ERROR(rclcpp::get_logger("get_intersection"),"Lines are parallel");
         throw std::runtime_error("Lines are parallel");
     }
 
-    double a2=(vy*(x0-x1)-vx*(y0-y1))/det;
+    double t1=(b1*(x2-x1)-a1*(y2-y1))/(b2*a1-a2*b1);
+    double t2=(b2*(x1-x2)-a2*(y1-y2))/(b1*a2-a1*b2);
+    double x=x2+t1*a2,y=y2+t1*b2;
+    double x_=x1+t2*a1,y_=y1+t2*b1;
 
-    return cv::Point2f(x1+a2*vx1,y1+a2*vy1);
+    if(abs(x-x_)>eps||abs(y-y_)>eps){
+        RCLCPP_ERROR(rclcpp::get_logger("get_intersection"),"x : [%lf],y : [%lf],x_ : [%lf],y_ : [%lf]",x,y,x_,y_);
+        // rclcpp::shutdown();
+    }
+
+    return cv::Point2f(x,y);
 
 }
 
@@ -425,4 +423,16 @@ cv::Mat quaternion_to_rotation_vector(const geometry_msgs::msg::Quaternion& quat
     rotation_vector_mat.at<double>(2) = axis.getZ() * angle;
 
     return rotation_vector_mat;
+}
+
+void draw_line(cv::Mat& image,const cv::Vec4d& line,cv::Scalar color,int thickness){
+    cv::Point2d p1(line[2]-line[0]*10000,line[3]-line[1]*10000);
+    cv::Point2d p2(line[2]+line[0]*10000,line[3]+line[1]*10000);
+    cv::line(image,p1,p2,color,thickness);
+}
+
+void draw_lines(cv::Mat& image,const std::vector<cv::Vec4d>& lines,cv::Scalar color,int thickness){
+    for(const auto& line:lines){
+        draw_line(image,line,color,thickness);
+    }
 }
