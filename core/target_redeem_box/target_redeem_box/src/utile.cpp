@@ -99,9 +99,12 @@ void draw_pnp_result(cv::Mat image,
     Eigen::Matrix<double,4,4> rtvec_eigen;
     // 相机内参矩阵
     Eigen::Matrix<double,3,3> camera_matrix_eigen;
-    camera_matrix_eigen<<camera_matrix[0],0,camera_matrix[2],
-        0,camera_matrix[1],camera_matrix[3],
-        0,0,1;
+
+    for(int i=0;i<3;i++){
+        for(int e=0;e<3;e++){
+            camera_matrix_eigen(i,e)=camera_matrix[i*3+e];
+        }
+    }
 
     // object_points 的 eigen 版本
     std::vector<Eigen::Matrix<double,4,1>> object_points_eigen;
@@ -126,8 +129,16 @@ void draw_pnp_result(cv::Mat image,
         Eigen::Matrix<double,4,1>(0,0,1,1)
     };
 
+    std::vector<Eigen::Matrix<double,4,1>>  xyz_axis_eigen_01={
+        Eigen::Matrix<double,4,1>(0,0,0,1),
+        Eigen::Matrix<double,4,1>(0.05,0,0,1),
+        Eigen::Matrix<double,4,1>(0,0.05,0,1),
+        Eigen::Matrix<double,4,1>(0,0,0.05,1)
+    };
+
     // 其次化转化过后的xyz轴
     std::vector<cv::Point>  image_xyz_axis_eigen;
+    std::vector<cv::Point>  image_xyz_axis_eigen_01;
 
     cv::Rodrigues(rvec,rmat);
 
@@ -152,8 +163,14 @@ void draw_pnp_result(cv::Mat image,
         image_xyz_axis_eigen.push_back(cv::Point2i(coordination(0),coordination(1)));
     }
 
+    for(const auto & i : xyz_axis_eigen_01){
+        Eigen::Matrix<double,3,1> coordination=camera_matrix_eigen*sign_mat*rtvec_eigen*i;
+        coordination/=coordination(2);
+        image_xyz_axis_eigen_01.push_back(cv::Point2i(coordination(0),coordination(1)));
+    }
+
     cv::drawContours(image,
-        std::vector<std::vector<cv::Point2i>>(1,result_points),
+        std::vector<std::vector<cv::Point2i>>{result_points},
         -1,
         color,
         thickness);
@@ -170,9 +187,9 @@ void draw_pnp_result(cv::Mat image,
         cv::line(image,image_xyz_axis_eigen[0],image_xyz_axis_eigen[1],color,thickness);
         cv::line(image,image_xyz_axis_eigen[0],image_xyz_axis_eigen[2],color,thickness);
         cv::line(image,image_xyz_axis_eigen[0],image_xyz_axis_eigen[3],color,thickness);
-        cv::putText(image,"x",image_xyz_axis_eigen[1],cv::FONT_HERSHEY_SIMPLEX,1.0,color);
-        cv::putText(image,"y",image_xyz_axis_eigen[2],cv::FONT_HERSHEY_SIMPLEX,1.0,color);
-        cv::putText(image,"z",image_xyz_axis_eigen[3],cv::FONT_HERSHEY_SIMPLEX,1.0,color);
+        cv::putText(image,"x",image_xyz_axis_eigen_01[1],cv::FONT_HERSHEY_SIMPLEX,1.0,color);
+        cv::putText(image,"y",image_xyz_axis_eigen_01[2],cv::FONT_HERSHEY_SIMPLEX,1.0,color);
+        cv::putText(image,"z",image_xyz_axis_eigen_01[3],cv::FONT_HERSHEY_SIMPLEX,1.0,color);
     }
 
 }

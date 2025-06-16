@@ -71,6 +71,8 @@ void ArrowDetector::imagePreprocess(const cv::Mat & pre_image, cv::Mat & pos_ima
 
 bool ArrowDetector::findCandidateContour(const cv::Mat& binary_image, const cv::Mat& gray_image, Counter& counter){
 
+    (void)gray_image;
+
     // 从 binary_image 提取到的全部轮廓
     Counters all_counters;
 
@@ -382,8 +384,6 @@ bool ArrowDetector::getCounterCorners(const Counter& counter,
     }
     RCLCPP_INFO(node_->get_logger(), "[getCounterCorners] find 6 points sets success!");
 
-    // cv::fitLine(LinesPoints[i],line,cv::DIST_L2,0,0.01,0.01);
-
     // 符合sorted_end_points顺序的直线
     std::vector<cv::Vec4d> sorted_fitted_lines(6);
 
@@ -568,7 +568,7 @@ bool ArrowDetector::detect(InputData input_data, DetectorOutput& output_data){
         cv::putText(colored_image,std::to_string(i),corners[i],cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(32,132,146),2);
     }
 
-    draw_pnp_result(colored_image,rvec,tvec,camera_matrix,redeem_front_points,cv::Scalar(32,43,132),2,cv::Point(0,0),true);
+    draw_pnp_result(colored_image,rvec,tvec,camera_matrix,redeem_front_points,cv::Scalar(32,43,132),2,cv::Point(0,25),true);
 
     cv::imshow("result_image",colored_image);
     cv::waitKey(1);
