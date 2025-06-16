@@ -120,7 +120,7 @@ protected:
      * @param end_points 按照一定顺序排列的边
      * @todo 没写
      */
-    bool sortCorners(Counter& counter, std::vector<std::pair<cv::Point,cv::Point> > end_points);
+    bool sortCorners(Counter& counter, std::vector<std::pair<cv::Point,cv::Point> > & end_points);
 
     /**
      * @brief 工具函数，如果发现箭头朝向右边，反转时使用
@@ -140,9 +140,9 @@ private:
     bool loadConfig();
 
     // 二值化界限
-    int BinaryThresholdThresh;
+    double BinaryThresholdThresh;
     // 二值化上界
-    int BinaryThresholdMaxval;
+    double BinaryThresholdMaxval;
     // findCandidateContour 中的多边形拟合参数Epsilon
     // 用于控制多边形拟合的精度
     double approxPolyDPEpsilon;

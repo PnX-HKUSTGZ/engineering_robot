@@ -16,6 +16,7 @@ ArrowDetector::ArrowDetector(const YAML::Node& config,
         bool ret = loadConfig();
         if(!ret){
             RCLCPP_ERROR(node_->get_logger(), " load config error");
+            throw std::runtime_error("ArrowDetector load config error");
         }
     }
 
@@ -25,6 +26,7 @@ ArrowDetector::ArrowDetector(const YAML::Node& config,
         bool ret = loadConfig();
         if(!ret){
             RCLCPP_ERROR(node_->get_logger(), " load config error");
+            throw std::runtime_error("ArrowDetector load config error");
         }
     }
 
@@ -264,19 +266,36 @@ bool ArrowDetector::findCandidateContour(const cv::Mat& binary_image, const cv::
 
 bool ArrowDetector::targetArrow(const cv::Mat & binary_image, const cv::Mat & gray_image, Counter2f& corners){
     Counter candidate_counter;
-    if(!findCandidateContour(binary_image,gray_image,candidate_counter)){
-        RCLCPP_INFO(node_->get_logger(), "[targetArrow] find candidate contours fail!");
+    try{
+        if(!findCandidateContour(binary_image,gray_image,candidate_counter)){
+            RCLCPP_WARN(node_->get_logger(), "[targetArrow] find candidate contours fail!");
+            return false;
+        }
+    }
+    catch(std::exception & e){
+        RCLCPP_ERROR(node_->get_logger(), "[targetArrow] find candidate contours fail! with %s",e.what());
         return false;
     }
+    RCLCPP_INFO(node_->get_logger(), "[targetArrow] find candidate contours success!");
+
 
     cv::drawContours(colored_image,Counters{candidate_counter},-1,cv::Scalar(200,32,255),2);
 
     // 直线拟合阶段
 
-    if(!getCounterCorners(candidate_counter,binary_image,gray_image,corners)){
-        RCLCPP_INFO(node_->get_logger(), "[targetArrow] get counter corners fail!");
+    RCLCPP_INFO(node_->get_logger(), "[targetArrow] start line fit!");
+
+    try{
+        if(!getCounterCorners(candidate_counter,binary_image,gray_image,corners)){
+            RCLCPP_WARN(node_->get_logger(), "[targetArrow] get counter corners fail!");
+            return false;
+        }
+    }
+    catch(std::exception & e){
+        RCLCPP_ERROR(node_->get_logger(), "[targetArrow] get counter corners fail! with %s",e.what());
         return false;
     }
+    RCLCPP_INFO(node_->get_logger(), "[targetArrow] get counter corners success!");
 
     for(auto & corner : corners){
         cv::circle(colored_image,corner,1,cv::Scalar(123,32,176),-1);
@@ -293,11 +312,22 @@ bool ArrowDetector::getCounterCorners(const Counter& counter,
 
     Counter approxcurve;
     std::vector<std::pair<cv::Point,cv::Point> > sorted_end_points;
-    cv::approxPolyDP(counter,approxcurve,approxPolyDPEpsilon,1);
+
+    try{
+        cv::approxPolyDP(counter,approxcurve,approxPolyDPEpsilon,1);
+    }
+    catch(cv::Exception & e){
+        RCLCPP_ERROR(node_->get_logger(),"[getCounterCorners] approxPolyDP fail with %s",e.what());
+        return false;
+    }
 
     // 对 approxcurve 进行排序，确定每个点的位置
 
     sortCorners(approxcurve, sorted_end_points);
+    if(sorted_end_points.size()!=6){
+        RCLCPP_ERROR(node_->get_logger(),"[getCounterCorners] size of sorted_end_points != 6, size: %ld",sorted_end_points.size());
+        return false;
+    }
 
     // 使用应用了 mask 的 binary_image
     cv::Mat masked_image;
@@ -315,7 +345,13 @@ bool ArrowDetector::getCounterCorners(const Counter& counter,
     // 对应轮廓的最小圆半径
     float radius;
 
-    cv::minEnclosingCircle(approxcurve,center,radius);
+    try{
+        cv::minEnclosingCircle(approxcurve,center,radius);
+    }
+    catch(cv::Exception & e){
+        RCLCPP_ERROR(node_->get_logger(),"[getCounterCorners] minEnclosingCircle fail with %s",e.what());
+        return false;
+    }
 
     cv::circle(mask,cv::Point(center.x,center.y),radius,cv::Scalar(255),-1);
 
@@ -323,16 +359,25 @@ bool ArrowDetector::getCounterCorners(const Counter& counter,
 
     }
 
-    cv::Canny(masked_image, canny_image, CannyThreshold1, CannyThreshold2, CannyapertureSize);
+    try{
+        cv::Canny(masked_image, canny_image, CannyThreshold1, CannyThreshold2, CannyapertureSize);
+    }
+    catch(cv::Exception & e){
+        RCLCPP_ERROR(node_->get_logger(),"[getCounterCorners] canny fail with %s",e.what());
+        return false;
+    }
+
 
     Counters point_sets;
     std::vector<std::pair<cv::Point,cv::Point> > end_points;
+
     find_polygon_counter_points_sets(canny_image, approxcurve, PeaksIgnoreRadius, point_sets, end_points);
 
     if(point_sets.size()!=6||end_points.size()!=6){
-        RCLCPP_ERROR(node_->get_logger(),"[getCounterCorners] size of point_sets or end_points != 6");
+        RCLCPP_ERROR(node_->get_logger(),"[getCounterCorners] size of point_sets or end_points != 6, point_sets: %ld end_points: %ld",point_sets.size(),end_points.size());
         return false;
     }
+    RCLCPP_INFO(node_->get_logger(), "[getCounterCorners] find 6 points sets success!");
 
     // cv::fitLine(LinesPoints[i],line,cv::DIST_L2,0,0.01,0.01);
 
@@ -353,7 +398,6 @@ bool ArrowDetector::getCounterCorners(const Counter& counter,
         }
 
     }
-
     // 每个点对应的两条直线
     // 点的顺序是 见 readme.md
     const static std::vector<std::pair<int,int>> line_point_map={
@@ -421,6 +465,7 @@ bool ArrowDetector::getCounterCorners(const Counter& counter,
 
 bool ArrowDetector::detect(InputData input_data, DetectorOutput& output_data){
 
+
     output_data.result_image_=std::make_shared<cv::Mat>(input_data.image.clone());
 
     colored_image = *output_data.result_image_;
@@ -428,31 +473,52 @@ bool ArrowDetector::detect(InputData input_data, DetectorOutput& output_data){
     cv::Mat binary_image;
     cv::Mat gray_image;
 
-    imagePreprocess(colored_image,binary_image,gray_image);
+    try{
+        imagePreprocess(colored_image,binary_image,gray_image);
+    }
+    catch(cv::Exception& e){
+        RCLCPP_ERROR(node_->get_logger(), "[detect] imagePreprocess fail! %s",e.what());
+        return false;
+    }
 
     Counter2f corners;
 
-    if(!targetArrow(binary_image,gray_image,corners)){
-        RCLCPP_INFO(node_->get_logger(), "[detect] find corners fail!");
+    try{
+        if(!targetArrow(binary_image,gray_image,corners)){
+            RCLCPP_WARN(node_->get_logger(), "[detect] find corners fail!");
+            return false;
+        }
+    }
+    catch(cv::Exception& e){
+        RCLCPP_ERROR(node_->get_logger(), "[detect] find corners fail! %s",e.what());
         return false;
     }
+
+    RCLCPP_INFO(node_->get_logger(), "[detect] find corners success!");
 
     cv::Mat rvec;
     cv::Mat tvec;
 
-    bool pnp_solver_success=pnp_solver(corners,
-        object_points,
-        camera_matrix,
-        dist_coeffs,
-        rvec,
-        tvec,
-        0,
-        cv::SOLVEPNP_IPPE);
-    
-    if(!pnp_solver_success){
-        RCLCPP_INFO(node_->get_logger(), "[detect] solve pnp fail!");
+    try{
+        bool pnp_solver_success=pnp_solver(corners,
+            object_points,
+            camera_matrix,
+            dist_coeffs,
+            rvec,
+            tvec,
+            0,
+            cv::SOLVEPNP_IPPE);
+        
+        if(!pnp_solver_success){
+            RCLCPP_WARN(node_->get_logger(), "[detect] solve pnp fail!");
+            return false;
+        }
+    }
+    catch(cv::Exception& e){
+        RCLCPP_ERROR(node_->get_logger(), "[detect] solve pnp fail! %s",e.what());
         return false;
     }
+    RCLCPP_INFO(node_->get_logger(), "[detect] solve pnp success!");
 
 
     {//判断反转
@@ -486,7 +552,15 @@ bool ArrowDetector::detect(InputData input_data, DetectorOutput& output_data){
 
     // 画出结果
 
-    draw_pnp_result(colored_image,rvec,tvec,camera_matrix,object_points,cv::Scalar(32,43,132),2,cv::Point(0,0),true);
+    for(int i=0;i<6;i++){
+        cv::circle(colored_image,corners[i],1,cv::Scalar(123,32,176),-1);
+        cv::putText(colored_image,std::to_string(i),corners[i],cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(32,132,146),2);
+    }
+
+    draw_pnp_result(colored_image,rvec,tvec,camera_matrix,redeem_front_points,cv::Scalar(32,43,132),2,cv::Point(0,0),true);
+
+    cv::imshow("result_image",colored_image);
+    cv::waitKey(1);
 
     output_data.rvec=rvec;
     output_data.tvec=tvec;
@@ -495,8 +569,8 @@ bool ArrowDetector::detect(InputData input_data, DetectorOutput& output_data){
 
 bool ArrowDetector::loadConfig(){
     try{
-    BinaryThresholdThresh=config["BinaryThresholdThresh"].as<int>();
-    BinaryThresholdMaxval=config["BinaryThresholdMaxval"].as<int>();
+    BinaryThresholdThresh=config["BinaryThresholdThresh"].as<double>();
+    BinaryThresholdMaxval=config["BinaryThresholdMaxval"].as<double>();
     approxPolyDPEpsilon=config["approxPolyDPEpsilon"].as<double>();
     LongShortRateMin=config["LongShortRateMin"].as<double>();
     LongShortRateMax=config["LongShortRateMax"].as<double>();
@@ -508,8 +582,8 @@ bool ArrowDetector::loadConfig(){
     ApproxcurveSizeMax=config["ApproxcurveSizeMax"].as<int>();
     InitHorizonLeftThreshold=config["InitHorizonLeftThreshold"].as<int>();
     InitHorizonRightThreshold=config["InitHorizonRightThreshold"].as<int>();
-    CannyThreshold1=config["CannyThreshold1"].as<int>();
-    CannyThreshold2=config["CannyThreshold2"].as<int>();
+    CannyThreshold1=config["CannyThreshold1"].as<double>();
+    CannyThreshold2=config["CannyThreshold2"].as<double>();
     CannyapertureSize=config["CannyapertureSize"].as<int>();
     PeaksIgnoreRadius=config["PeaksIgnoreRadius"].as<double>();
 
@@ -544,7 +618,16 @@ bool ArrowDetector::loadConfig(){
     return true;
 }
 
-bool ArrowDetector::sortCorners(Counter& counter, std::vector<std::pair<cv::Point,cv::Point> > end_points){
+bool ArrowDetector::sortCorners(Counter& counter, std::vector<std::pair<cv::Point,cv::Point> > & end_points){
+
+    const static std::vector<std::pair<int,int>> point_line_map={
+        std::make_pair(0,2),
+        std::make_pair(0,4),
+        std::make_pair(1,3),
+        std::make_pair(1,5),
+        std::make_pair(2,3),
+        std::make_pair(4,5)
+    };
 
     if(counter.size()!=6){
         RCLCPP_ERROR(node_->get_logger(),"[sortCorners] counter size error!, get %ld",counter.size());
@@ -561,7 +644,13 @@ bool ArrowDetector::sortCorners(Counter& counter, std::vector<std::pair<cv::Poin
 
     Counter2f triangle;
 
-    cv::minEnclosingTriangle(counter,triangle);
+    cv::minEnclosingTriangle([&counter](){
+        Counter2f ans;
+        for(int i=0;i<6;i++){
+            ans.push_back(counter[i]);
+        }
+        return ans;
+    }(),triangle);
 
     // 将triangle和counter按照index进行匹配，由于最外侧点（也就是箭头尖尖上那个点是必然匹配成功的，其他侧边的不用管）
     // 前面是point_pairs的index是triangle的index，后面是counter的index
@@ -586,25 +675,34 @@ bool ArrowDetector::sortCorners(Counter& counter, std::vector<std::pair<cv::Poin
 
     // counter中最外侧点的index
     int top_point_index_counter=-1;
+    // triangle中最外侧点的index
+    int top_point_index_triangle=-1;
+    // 记录两点中点到圆心的最小距离
+    double min_center_dis=1e9;
+
 
     // 通过叉乘判断
     for(int i=0;i<3;i++){
-        cv::Point2f main_vec=triangle[i]-center;
-        cv::Point2f cross_vec1=triangle[(i+1)%3]-center;
-        cv::Point2f cross_vec2=triangle[(i+2)%3]-center;
+        cv::Point2f center_point_another2=(triangle[(i+1)%3]+triangle[(i+2)%3])/2;
 
-        if(main_vec.cross(cross_vec1)*main_vec.cross(cross_vec2)<0){
+        if(distance_points(center,center_point_another2)<min_center_dis){
+            min_center_dis=distance_points(center,center_point_another2);
             top_point_index_counter=point_pairs[i].first;
-            answer_counter[0]=counter[top_point_index_counter];
-            if(main_vec.cross(cross_vec1)<=0){
-                answer_counter[4]=counter[point_pairs[(i+1)%3].first];
-                answer_counter[2]=counter[point_pairs[(i+2)%3].first];
-            }
-            else{
-                answer_counter[2]=counter[point_pairs[(i+1)%3].first];
-                answer_counter[4]=counter[point_pairs[(i+2)%3].first];
-            }
-            break;
+            top_point_index_triangle=i;
+        }
+    }
+
+    {
+        cv::Point2f main_vec=triangle[top_point_index_triangle]-center;
+        cv::Point2f cross_vec=triangle[(top_point_index_triangle+1)%3]-center;
+        answer_counter[0]=counter[top_point_index_counter];
+        if(main_vec.cross(cross_vec)<=0){
+            answer_counter[4]=counter[point_pairs[(top_point_index_triangle+1)%3].first];
+            answer_counter[2]=counter[point_pairs[(top_point_index_triangle+2)%3].first];
+        }
+        else{
+            answer_counter[2]=counter[point_pairs[(top_point_index_triangle+1)%3].first];
+            answer_counter[4]=counter[point_pairs[(top_point_index_triangle+2)%3].first];
         }
     }
 
@@ -634,6 +732,11 @@ bool ArrowDetector::sortCorners(Counter& counter, std::vector<std::pair<cv::Poin
     }
 
     counter=answer_counter;
+
+    end_points.clear();
+    for(int i=0;i<6;i++){
+        end_points.push_back(std::make_pair(answer_counter[point_line_map[i].first],answer_counter[point_line_map[i].second]));
+    }
 
     return true;
 

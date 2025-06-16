@@ -94,6 +94,8 @@ private:
     void image_point_cloud_callback(const sensor_msgs::msg::Image::ConstSharedPtr& image_msg, 
         const sensor_msgs::msg::PointCloud2::ConstSharedPtr& point_cloud_msg);
 
+    void image_callback(const sensor_msgs::msg::Image::ConstSharedPtr& image_msg);
+
     void handle_detect_result(const DetectorOutput & output);
 
 // 运行时参数

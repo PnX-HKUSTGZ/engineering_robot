@@ -218,6 +218,8 @@ void find_polygon_counter_points_sets(const cv::Mat & binary_image,
     std::vector<std::vector<cv::Point>> & points_sets,
     std::vector<std::pair<cv::Point,cv::Point> >& end_points){
 
+    cv::imshow("find_polygon_counter_points_sets binary_image",binary_image);
+    
     // x上的位移
     static int dx[8]={0,0,1,-1,1,-1,1,-1};
     // y上的位移
@@ -239,7 +241,7 @@ void find_polygon_counter_points_sets(const cv::Mat & binary_image,
             if(vis.at<uchar>(e,i)==0) continue;
             if(is_in_peak_threshold(now_point,peaks,peaks_ignore_radius).first) continue;
 
-            vis.at<uchar>(e,i)=1;
+            vis.at<uchar>(e,i)=0;
 
             // 当前的点集合
             std::vector<cv::Point> points_set;
@@ -248,10 +250,13 @@ void find_polygon_counter_points_sets(const cv::Mat & binary_image,
 
             std::queue<cv::Point> points_queue;
 
+            points_queue.push(now_point);
+
             // 找边
             while(!points_queue.empty()){
                 cv::Point now_point=points_queue.front();
                 points_queue.pop();
+
                 for(int i=0;i<8;i++){
                     int nx=now_point.x+dx[i],ny=now_point.y+dy[i];
                     cv::Point next_point(nx,ny);
@@ -320,6 +325,9 @@ cv::Vec4d get_line(const cv::Point_<T> & p1,const cv::Point_<T> & p2){
     double y0=p1.y;
     return cv::Vec4d(vec.x,vec.y,x0,y0);
 }
+
+template cv::Vec<double, 4> get_line<float>(cv::Point_<float> const&, cv::Point_<float> const&);
+template cv::Vec<double, 4> get_line<double>(cv::Point_<double> const&, cv::Point_<double> const&);
 
 geometry_msgs::msg::Quaternion rotation_vector_to_quaternion(const cv::Mat& rotation_vector_mat)
 {

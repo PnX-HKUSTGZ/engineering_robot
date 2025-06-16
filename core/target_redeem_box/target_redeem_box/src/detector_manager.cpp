@@ -25,10 +25,10 @@ DetectorManager::DetectorManager(rclcpp::NodeOptions options) : rclcpp::Node("ta
     }
 
     try{
-    image_topic=config["topics"]["image_topic"].as<std::string>();
-    image_frame=config["topics"]["image_frame"].as<std::string>();
-    point_cloud_topic=config["tf_frames"]["point_cloud_topic"].as<std::string>();
-    point_cloud_frame=config["tf_frames"]["point_cloud_frame"].as<std::string>();
+    image_topic=config["topics"]["image"].as<std::string>();
+    image_frame=config["topics"]["point_cloud"].as<std::string>();
+    point_cloud_topic=config["tf_frames"]["image"].as<std::string>();
+    point_cloud_frame=config["tf_frames"]["point_cloud"].as<std::string>();
     input_data_time_out = rclcpp::Duration::from_seconds(config["input_data_time_out"].as<std::vector<int>>()[0]) + 
         rclcpp::Duration::from_nanoseconds(config["input_data_time_out"].as<std::vector<int>>()[1]);
     }
@@ -48,10 +48,13 @@ DetectorManager::DetectorManager(rclcpp::NodeOptions options) : rclcpp::Node("ta
     // 直接使用 rmw/qos_profiles.h 提供的 rmw_qos_profile_sensor_data 作为 qos 配置
     image_subscriber_=std::make_shared<message_filters::Subscriber<sensor_msgs::msg::Image>>(this,image_topic,rmw_qos_profile_sensor_data);
     point_cloud_subscriber_=std::make_shared<message_filters::Subscriber<sensor_msgs::msg::PointCloud2>>(this,point_cloud_topic,rmw_qos_profile_sensor_data);
-    synchronizer_=std::make_shared<message_filters::Synchronizer<SyncPolicy>>(SyncPolicy(10), *image_subscriber_, *point_cloud_subscriber_);
-    synchronizer_->registerCallback(
-        std::bind(&DetectorManager::image_point_cloud_callback,this,std::placeholders::_1,std::placeholders::_2)
-    );
+
+    image_subscriber_->registerCallback(std::bind(&DetectorManager::image_callback,this,std::placeholders::_1));
+
+    // synchronizer_=std::make_shared<message_filters::Synchronizer<SyncPolicy>>(SyncPolicy(10), *image_subscriber_, *point_cloud_subscriber_);
+    // synchronizer_->registerCallback(
+    //     std::bind(&DetectorManager::image_point_cloud_callback,this,std::placeholders::_1,std::placeholders::_2)
+    // );
 
     bool init_detectors_success=init_detectors();
     if(!init_detectors_success){
@@ -115,12 +118,45 @@ void DetectorManager::image_point_cloud_callback(const sensor_msgs::msg::Image::
 
 }
         
+void DetectorManager::image_callback(const sensor_msgs::msg::Image::ConstSharedPtr& image_msg){
+
+    // 转换图像
+
+    cv::Mat image;
+    try{
+        cv_bridge::toCvCopy(image_msg, sensor_msgs::image_encodings::BGR8)->image.copyTo(image);
+    }
+    catch (cv_bridge::Exception& e){
+    // 转换失败
+        RCLCPP_ERROR(this->get_logger(), "cv_bridge exception: %s", e.what());
+        return;
+    }
+    
+    InputData::SharedPtr input_data=std::make_shared<InputData>(this->now(),image,nullptr);
+
+    {
+        std::lock_guard<std::mutex> lock(input_data_mutex);
+        this->input_data=input_data;
+    }
+
+    // RCLCPP_INFO(this->get_logger(),"[image_callback] input data update");
+
+}
+        
+
 bool DetectorManager::init_detectors(){
+    try{
     if(!(config["detectors"].IsDefined()&&config["detectors"].IsSequence())){
         RCLCPP_FATAL(this->get_logger(),"[init_detectors] get detectors list config error");
         throw std::runtime_error("[init_detectors] get detectors list config error");
         return false;
     }
+    }
+    catch(const std::exception& e){
+        RCLCPP_FATAL(this->get_logger(),"[init_detectors] get detectors list config error:%s",e.what());
+        return false;
+    }
+
 
     try{
     int detector_num=config["detectors"].size();
@@ -129,26 +165,36 @@ bool DetectorManager::init_detectors(){
         std::string detector_name=config["detectors"][i][1].as<std::string>();
         YAML::Node config_node= (config["detector_config"][detector_name].IsMap() ? config["detector_config"][detector_name] : YAML::Node());
 
-        if(detector_type=="arrow_detector"){
-            std::shared_ptr<ArrowDetector> detector=std::make_shared<ArrowDetector>(
-                config_node,
-                detector_name);
-            detectors.push_back(detector);
+        std::shared_ptr<BaseDetector> detector=nullptr;
+
+        try{
+            if(detector_type=="arrow_detector"){
+                detector=std::make_shared<ArrowDetector>(
+                    config_node,
+                    detector_name);
+            }
+            // else if(detector_type=="arrow_detector_pcl"){
+            //     std::shared_ptr<ArrowDetectorPCL> detector=std::make_shared<ArrowDetectorPCL>(
+            //         config_node,
+            //         detector_name);
+            //     detectors.push_back(detector);
+            // }
+            // else if(detector_type=="rectangle_detector"){
+            //     std::shared_ptr<RectangleDetector> detector=std::make_shared<RectangleDetector>(
+            //         config_node,
+            //         detector_name);
+            //     detectors.push_back(detector);
+            // }
+            else{
+                RCLCPP_ERROR(this->get_logger(),"[init_detectors] get detector type error, get %s. skip",detector_type.c_str());
+            }
         }
-        // else if(detector_type=="arrow_detector_pcl"){
-        //     std::shared_ptr<ArrowDetectorPCL> detector=std::make_shared<ArrowDetectorPCL>(
-        //         config_node,
-        //         detector_name);
-        //     detectors.push_back(detector);
-        // }
-        // else if(detector_type=="rectangle_detector"){
-        //     std::shared_ptr<RectangleDetector> detector=std::make_shared<RectangleDetector>(
-        //         config_node,
-        //         detector_name);
-        //     detectors.push_back(detector);
-        // }
-        else{
-            RCLCPP_ERROR(this->get_logger(),"[init_detectors] get detector type error, get %s. skip",detector_type.c_str());
+        catch(const std::exception& e){
+            RCLCPP_ERROR(this->get_logger(),"[init_detectors] init detector error:%s",e.what());
+            continue;
+        }
+        if(detector!=nullptr){
+            detectors.push_back(detector);
         }
     }
 
@@ -172,6 +218,7 @@ void DetectorManager::start_detect(){
     auto detect_function = [this](const std::shared_ptr<BaseDetector> detector){
         rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr detect_result_publisher=
         this->create_publisher<std_msgs::msg::Int32>(detector->getDetectorName()+"_time_use",10);
+        RCLCPP_INFO(this->get_logger(),"[detect_function] create %s",detector->getDetectorName().c_str());
         while(true){
             if(!rclcpp::ok()){
                 break;
@@ -182,6 +229,7 @@ void DetectorManager::start_detect(){
                 input_data=this->input_data;
             }
             if(input_data==nullptr){
+                RCLCPP_WARN(this->get_logger(),"[%s] input data is null",detector->getDetectorName().c_str());
                 continue;
             }
             if(input_data->update_time-this->now() > this->input_data_time_out){
@@ -190,6 +238,7 @@ void DetectorManager::start_detect(){
             }
             auto start_time = std::chrono::high_resolution_clock::now();
             DetectorOutput output;
+            RCLCPP_INFO(this->get_logger(),"[%s] detect start", detector->getDetectorName().c_str());
             bool detect_success=detector->detect(*input_data,output);
             if(detect_success){
                 auto end_time = std::chrono::high_resolution_clock::now();
