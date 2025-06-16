@@ -85,9 +85,10 @@ bool ArrowDetector::findCandidateContour(const cv::Mat& binary_image, const cv::
     // 第一次筛选后的轮廓，对应的轮廓像素大小
     std::vector<int> first_counters_size;
     // 筛选后的轮廓的互斥锁，用于之后的 omp 并行处理
-    std::mutex first_counters_mutex;
+    // std::mutex first_counters_mutex;
 
-    #pragma omp parallel for
+    // omp_set_num_threads(2);
+    // #pragma omp parallel for
     for(auto & counter: all_counters){
         // 拟合最小矩形
         cv::RotatedRect rotatedrect_=cv::minAreaRect(counter);
@@ -153,7 +154,7 @@ bool ArrowDetector::findCandidateContour(const cv::Mat& binary_image, const cv::
 
         // 添加备选
         {
-            std::lock_guard<std::mutex> lock(first_counters_mutex);
+            // std::lock_guard<std::mutex> lock(first_counters_mutex);
             first_counters.push_back(counter);
             first_approxcurve_counters.push_back(approxcurve);
             first_counters_size.push_back(pixel_num);
@@ -175,9 +176,11 @@ bool ArrowDetector::findCandidateContour(const cv::Mat& binary_image, const cv::
     // 第二次筛选后的轮廓，对应的轮廓像素大小
     std::vector<int> second_counters_size;
     // 筛选后的轮廓的互斥锁，用于之后的 omp 并行处理
-    std::mutex second_counters_mutex;
+    // std::mutex second_counters_mutex;
 
-    #pragma omp parallel for
+    // omp_set_num_threads(2);
+
+    // #pragma omp parallel for
     for(std::size_t i=0;i<first_counters.size();i++){
         // 储存每一个直线的点的索引以及角度
         std::vector<Slope> slopes;
@@ -235,7 +238,7 @@ bool ArrowDetector::findCandidateContour(const cv::Mat& binary_image, const cv::
 
         // 筛选后的轮廓添加
         {
-            std::lock_guard<std::mutex> lock(second_counters_mutex);
+            // std::lock_guard<std::mutex> lock(second_counters_mutex);
             second_counters.push_back(first_counters[i]);
             second_approxcurve_counters.push_back(first_approxcurve_counters[i]);
             second_counters_size.push_back(first_counters_size[i]);
