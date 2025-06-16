@@ -449,6 +449,36 @@ bool ArrowDetector::detect(InputData input_data, DetectorOutput& output_data){
         return false;
     }
 
+
+    {//判断反转
+        cv::Point2f center;
+        float radius;
+
+        cv::minEnclosingCircle(corners,center,radius);
+
+        if(center.x>corners[0].x){
+            
+            geometry_msgs::msg::TransformStamped stamp;
+            stamp.transform.translation.x=tvec.at<double>(0);
+            stamp.transform.translation.y=tvec.at<double>(1);
+            stamp.transform.translation.z=tvec.at<double>(2);
+
+            stamp.transform.rotation=rotation_vector_to_quaternion(rvec);
+
+            // 反转
+            stamp=reverseTransforme(stamp);
+
+            // 转换回旋转向量
+            rvec=quaternion_to_rotation_vector(stamp.transform.rotation);
+            
+
+            // 转换回平移向量
+            tvec.at<double>(0)=stamp.transform.translation.x;
+            tvec.at<double>(1)=stamp.transform.translation.y;
+            tvec.at<double>(2)=stamp.transform.translation.z;
+        }
+    }
+
     // 画出结果
 
     draw_pnp_result(colored_image,rvec,tvec,camera_matrix,object_points,cv::Scalar(32,43,132),2,cv::Point(0,0),true);
@@ -505,6 +535,145 @@ bool ArrowDetector::loadConfig(){
         RCLCPP_ERROR(node_->get_logger(),"[loadConfig] load config fail! %s",e.what());
         return false;
     }
+
+    return true;
+}
+
+bool ArrowDetector::sortCorners(Counter& counter, std::vector<std::pair<cv::Point,cv::Point> > end_points){
+
+    if(counter.size()!=6){
+        RCLCPP_ERROR(node_->get_logger(),"[sortCorners] counter size error!, get %ld",counter.size());
+        return false;
+    }
+
+    // 最终答案
+    Counter answer_counter(6);
+
+    cv::Point2f center;
+    float radius;
+
+    cv::minEnclosingCircle(counter,center,radius);
+
+    Counter2f triangle;
+
+    cv::minEnclosingTriangle(counter,triangle);
+
+    // 将triangle和counter按照index进行匹配，由于最外侧点（也就是箭头尖尖上那个点是必然匹配成功的，其他侧边的不用管）
+    // 前面是point_pairs的index是triangle的index，后面是counter的index
+    std::vector<std::pair<int,double>> point_pairs(3,std::pair<int,double>(-1,1e9));
+    // 在point_pairs中记录counter中已经被使用的点的index
+    std::vector<bool> index_used(6,false);
+
+
+    for(int i=0;i<3;i++){
+        for(int e=0;e<6;e++){
+            if(distance_points(triangle[i],counter[e])<point_pairs[i].second){
+                point_pairs[i].second=distance_points(triangle[i],counter[e]);
+                point_pairs[i].first=e;
+            }
+        }
+        if(point_pairs[i].first==-1){
+            RCLCPP_ERROR(node_->get_logger(),"[sortCorners] pair triangle and counter point fail!");
+            return false;
+        }
+        index_used[point_pairs[i].first]=true;
+    }
+
+    // counter中最外侧点的index
+    int top_point_index_counter=-1;
+    int top_point_index_triangle=-1;
+
+    // 通过叉乘判断
+    for(int i=0;i<3;i++){
+        cv::Point2f main_vec=triangle[i]-center;
+        cv::Point2f cross_vec1=triangle[(i+1)%3]-center;
+        cv::Point2f cross_vec2=triangle[(i+2)%3]-center;
+
+        if(main_vec.cross(cross_vec1)*main_vec.cross(cross_vec2)<0){
+            top_point_index_triangle=i;
+            top_point_index_counter=point_pairs[i].first;
+            answer_counter[0]=counter[top_point_index_counter];
+            if(main_vec.cross(cross_vec1)<=0){
+                answer_counter[4]=counter[point_pairs[(i+1)%3].first];
+                answer_counter[2]=counter[point_pairs[(i+2)%3].first];
+            }
+            else{
+                answer_counter[2]=counter[point_pairs[(i+1)%3].first];
+                answer_counter[4]=counter[point_pairs[(i+2)%3].first];
+            }
+            break;
+        }
+    }
+
+    // 在规定的角点顺序中的外侧三角形与内侧三角形的顶点的对应配对
+    std::vector<std::pair<int,int>> index_pair={
+        std::make_pair(0,1),
+        std::make_pair(2,3),
+        std::make_pair(4,5)
+    };
+
+    for(int i=0;i<3;i++){
+        double min_distance=1e9;
+        int min_index=-1;
+        for(int e=0;e<6;e++){
+            if(index_used[e]) continue;
+            if(distance_points(answer_counter[index_pair[i].first],counter[e])<min_distance){
+                min_distance=distance_points(answer_counter[index_pair[i].first],counter[e]);
+                min_index=e;
+            }
+        }
+        if(min_index==-1){
+            RCLCPP_ERROR(node_->get_logger(),"[sortCorners] pair iner and outer counter point fail!");
+            return false;
+        }
+        answer_counter[index_pair[i].second]=counter[min_index];
+        index_used[min_index]=true;
+    }
+
+    counter=answer_counter;
+
+}
+
+geometry_msgs::msg::TransformStamped ArrowDetector::reverseTransforme(
+    const geometry_msgs::msg::TransformStamped& transform_A_to_child)
+{
+    // 1. 提取输入的旋转和平移
+    tf2::Quaternion q_A_to_C;
+    // tf2::fromMsg(transform_A_to_child.transform.rotation, q_A_to_C);
+    q_A_to_C.setX(transform_A_to_child.transform.rotation.x);
+    q_A_to_C.setY(transform_A_to_child.transform.rotation.y);
+    q_A_to_C.setZ(transform_A_to_child.transform.rotation.z);
+    q_A_to_C.setW(transform_A_to_child.transform.rotation.w);
+
+    geometry_msgs::msg::Vector3 t_A_to_C = transform_A_to_child.transform.translation;
+
+    // 2. 定义从 C 到 B 的旋转：绕 Z 轴逆时针 90 度 (-90度)
+    // 可以使用 setRPY, setEulerZYX, 或者 setRotation
+    // setRPY(roll, pitch, yaw) 这里的 yaw 是绕 Z 轴的旋转
+    tf2::Quaternion q_C_to_B;
+    q_C_to_B.setRPY(0, 0, -M_PI ); // 逆时针 90 度是 -90 度
+
+    // 3. 计算从 A 到 B 的总旋转
+    // q_A_to_B = q_A_to_C * q_C_to_B; (tf2 的乘法顺序)
+    tf2::Quaternion q_A_to_B = q_A_to_C * q_C_to_B;
+
+    // 4. 从 A 到 B 的平移与从 A 到 C 的平移相同
+    geometry_msgs::msg::Vector3 t_A_to_B = t_A_to_C;
+
+    // 5. 构造输出的 TransformStamped 消息
+    geometry_msgs::msg::TransformStamped transform_A_to_B;
+
+    transform_A_to_B.header.stamp = transform_A_to_child.header.stamp; // 使用相同的时间戳
+    transform_A_to_B.header.frame_id = transform_A_to_child.header.frame_id; // A 坐标系
+    transform_A_to_B.child_frame_id = transform_A_to_child.child_frame_id; // 给新的 B 坐标系命名
+
+    transform_A_to_B.transform.translation = t_A_to_B;
+    transform_A_to_B.transform.rotation.x = q_A_to_B.x();
+    transform_A_to_B.transform.rotation.y = q_A_to_B.y();
+    transform_A_to_B.transform.rotation.z = q_A_to_B.z();
+    transform_A_to_B.transform.rotation.w = q_A_to_B.w();
+
+    return transform_A_to_B;
 }
 
 }// Engineering_robot_Pnx

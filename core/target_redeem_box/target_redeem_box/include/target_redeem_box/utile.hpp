@@ -141,4 +141,20 @@ cv::Vec4d get_line(const cv::Point_<T> & p1,const cv::Point_<T> & p2);
  */
 geometry_msgs::msg::Quaternion rotation_vector_to_quaternion(const cv::Mat& rotation_vector_mat);
 
+/**
+ * @brief 四元数转换为旋转向量
+ * @param quaternion_msg 四元数
+ * @return cv::Mat 旋转向量，3*1的矩阵，类型为CV_64F。失败会返回一个空的cv::Mat。
+ */
+cv::Mat quaternion_to_rotation_vector(const geometry_msgs::msg::Quaternion& quaternion_msg);
+
+/**
+ * @brief 计算点到直线的距离
+ * @tparam T 点的类型
+ * @param point 点
+ * @param line 直线
+ * @return double 距离
+ */
+template <typename T>
+double distance_point_line(const cv::Point_<T>& point, const cv::Vec4d& line);
 #endif

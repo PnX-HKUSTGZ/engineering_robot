@@ -118,7 +118,15 @@ protected:
      * @param end_points 按照一定顺序排列的边
      * @todo 没写
      */
-    void sortCorners(Counter& counter, std::vector<std::pair<cv::Point,cv::Point> > end_points);
+    bool sortCorners(Counter& counter, std::vector<std::pair<cv::Point,cv::Point> > end_points);
+
+    /**
+     * @brief 工具函数，如果发现箭头朝向右边，反转时使用
+     * @param transform_A_to_child 变换
+     * @return 反转后的变换，将transform_A_to_child绕着z轴旋转180度
+     */
+    geometry_msgs::msg::TransformStamped reverseTransforme(
+        const geometry_msgs::msg::TransformStamped& transform_A_to_child);
 
 // 参数部分与运行时全局变量
 private:

@@ -9,10 +9,44 @@ input_data_time_out: [0,50000000] # int32 [s.ns]
 # 设置哪些检测器运行，设置其运行参数 [type, name]
 # 对应的config 在 detector_config 下对应的 name 键下
 detectors: [ 
-  ["rectangle_detector","rectangle_detector"],
+  # ["rectangle_detector","rectangle_detector"],
   ["arrow_detector","arrow_detector"],
-  ["arrow_detector_pcl","arrow_detector_pcl"],
+  # ["arrow_detector_pcl","arrow_detector_pcl"],
   ]
 
 
 detector_config:
+  arrow_detector:
+    BinaryThresholdThresh: 130.
+    BinaryThresholdMaxval: 300.
+    approxPolyDPEpsilon: 10.
+    LongShortRateMin: 5.0
+    LongShortRateMax: 25.0
+    PixelNumMin: 0
+    PixelNumMax: 80000
+    RectLengthWidthRatioMin: 1.1
+    RectLengthWidthRatioMax: 3.0
+    ApproxcurveSizeMin: 6
+    ApproxcurveSizeMax: 6
+    InitHorizonLeftThreshold: 0
+    InitHorizonRightThreshold: 10
+    CannyThreshold1: 200.0
+    CannyThreshold2: 300.0
+    CannyapertureSize: 5
+    PeaksIgnoreRadius: 5.0
+    camera_matrix: [1796.781017873506, 0, 689.1778242334642 , 0, 1797.197922401104, 570.7557440356007, 0.0, 0.0, 1.0]
+    dist_coeffs: [-0.08514213078611998, 0.2249919871969058, 0.0004426030910578343, -0.0001779668380391995, -0.246659980650563]
+    object_points:
+      - [0.144, 0, 0.0455]
+      - [0.144, 0, 0.059642135623730955]
+      - [0.144, 0.1, 0.1455]
+      - [0.144, 0.08585786437626905, 0.1455]
+      - [0.144, -0.1, 0.1455]
+      - [0.144, -0.08585786437626905, 0.1455]
+      - [0.144, 0.007071067811865476, 0.05257106781186548]
+      - [0.144, -0.007071067811865476, 0.05257106781186548]
+    redeem_front_points:
+      - [-0.12, 0.12, 0]
+      - [0.12, 0.12, 0]
+      - [0.12, -0.12, 0]
+      - [-0.12, -0.12, 0]

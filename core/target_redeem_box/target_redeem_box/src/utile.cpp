@@ -381,3 +381,40 @@ geometry_msgs::msg::Quaternion rotation_vector_to_quaternion(const cv::Mat& rota
 
     return ros_quaternion;
 }
+
+template <typename T>
+double distance_point_line(const cv::Point_<T>& point, const cv::Vec4d& line) {
+    // line: (vx, vy, x0, y0)
+    cv::Point2d line_point(line[2], line[3]);
+    cv::Point2d line_dir(line[0], line[1]);
+
+    cv::Point2d point_vec(point.x - line_point.x, point.y - line_point.y);
+
+    // 2D 向量叉乘的模长等于两个向量构成的平行四边形的面积
+    // 面积 = ||point_vec x line_dir||
+    // 在 2D 中，叉乘结果是一个标量，其绝对值等于模长
+    double cross_product_magnitude = std::abs(point_vec.x * line_dir.y - point_vec.y * line_dir.x);
+
+    // 由于 line_dir 是归一化的，||line_dir|| = 1
+    // 距离 = 面积 / ||line_dir|| = 面积
+    return cross_product_magnitude;
+}
+
+cv::Mat quaternion_to_rotation_vector(const geometry_msgs::msg::Quaternion& quaternion_msg){
+    
+    tf2::Quaternion quaternion(quaternion_msg.x, quaternion_msg.y, quaternion_msg.z, quaternion_msg.w);
+
+    // 归一化四元数（可选，但推荐）
+    quaternion.normalize();
+
+    tf2::Vector3 axis = quaternion.getAxis();
+    double angle = quaternion.getAngle();
+
+    // 构建旋转向量
+    cv::Mat rotation_vector_mat = cv::Mat::zeros(3, 1, CV_64F);
+    rotation_vector_mat.at<double>(0) = axis.getX() * angle;
+    rotation_vector_mat.at<double>(1) = axis.getY() * angle;
+    rotation_vector_mat.at<double>(2) = axis.getZ() * angle;
+
+    return rotation_vector_mat;
+}

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+conda deactivate
+
 # build interface package and robot_mdoel packages
 colcon build --packages-select command_interfaces
 
