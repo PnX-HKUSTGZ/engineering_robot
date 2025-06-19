@@ -16,3 +16,4 @@ ros_bag/
 COLCON_IGNORE
 .built_by
 old_src/
+.venv/

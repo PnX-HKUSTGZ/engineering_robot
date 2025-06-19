@@ -49,12 +49,29 @@ DetectorManager::DetectorManager(rclcpp::NodeOptions options) : rclcpp::Node("ta
     image_subscriber_=std::make_shared<message_filters::Subscriber<sensor_msgs::msg::Image>>(this,image_topic,rmw_qos_profile_sensor_data);
     point_cloud_subscriber_=std::make_shared<message_filters::Subscriber<sensor_msgs::msg::PointCloud2>>(this,point_cloud_topic,rmw_qos_profile_sensor_data);
 
-    image_subscriber_->registerCallback(std::bind(&DetectorManager::image_callback,this,std::placeholders::_1));
 
-    // synchronizer_=std::make_shared<message_filters::Synchronizer<SyncPolicy>>(SyncPolicy(10), *image_subscriber_, *point_cloud_subscriber_);
-    // synchronizer_->registerCallback(
-    //     std::bind(&DetectorManager::image_point_cloud_callback,this,std::placeholders::_1,std::placeholders::_2)
-    // );
+    // 检测是否有点云发布者
+
+    bool have_point_cloud_publisher=false;
+    for(int i=0;i<5;i++){
+        if(this->count_publishers(point_cloud_topic)){
+            have_point_cloud_publisher=true;
+            break;
+        }
+        RCLCPP_WARN(this->get_logger(),"wait for point cloud publisher");
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    }
+    if(!have_point_cloud_publisher){
+        RCLCPP_WARN(this->get_logger(),"no point cloud publisher, use image topic only");
+        image_subscriber_->registerCallback(std::bind(&DetectorManager::image_callback,this,std::placeholders::_1));
+    }
+    else{
+        RCLCPP_INFO(this->get_logger(),"use image and point cloud topic");
+        synchronizer_=std::make_shared<message_filters::Synchronizer<SyncPolicy>>(SyncPolicy(10), *image_subscriber_, *point_cloud_subscriber_);
+        synchronizer_->registerCallback(
+            std::bind(&DetectorManager::image_point_cloud_callback,this,std::placeholders::_1,std::placeholders::_2)
+        );
+    }
 
     bool init_detectors_success=init_detectors();
     if(!init_detectors_success){
@@ -173,12 +190,12 @@ bool DetectorManager::init_detectors(){
                     config_node,
                     detector_name);
             }
-            // else if(detector_type=="arrow_detector_pcl"){
-            //     std::shared_ptr<ArrowDetectorPCL> detector=std::make_shared<ArrowDetectorPCL>(
-            //         config_node,
-            //         detector_name);
-            //     detectors.push_back(detector);
-            // }
+            else if(detector_type=="arrow_detector_pcl"){
+                std::shared_ptr<ArrowDetectorPCL> detector=std::make_shared<ArrowDetectorPCL>(
+                    config_node,
+                    detector_name);
+                detectors.push_back(detector);
+            }
             // else if(detector_type=="rectangle_detector"){
             //     std::shared_ptr<RectangleDetector> detector=std::make_shared<RectangleDetector>(
             //         config_node,
@@ -216,8 +233,15 @@ bool DetectorManager::init_detectors(){
 
 void DetectorManager::start_detect(){
     auto detect_function = [this](const std::shared_ptr<BaseDetector> detector){
-        rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr detect_result_publisher=
+        rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr detect_time_publisher=
         this->create_publisher<std_msgs::msg::Int32>(detector->getDetectorName()+"_time_use",10);
+
+        rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr detect_image_publisher=
+        this->create_publisher<sensor_msgs::msg::Image>(detector->getDetectorName()+"_colored_image",10);
+
+        rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr detect_point_cloud_publisher=
+        this->create_publisher<sensor_msgs::msg::PointCloud2>(detector->getDetectorName()+"_point_cloud",10);
+
         RCLCPP_INFO(this->get_logger(),"[detect_function] create %s",detector->getDetectorName().c_str());
         while(true){
             if(!rclcpp::ok()){
@@ -243,10 +267,11 @@ void DetectorManager::start_detect(){
             if(detect_success){
                 auto end_time = std::chrono::high_resolution_clock::now();
                 auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
-                std_msgs::msg::Int32 time_use_msg;
-                time_use_msg.data=duration.count();
-                detect_result_publisher->publish(time_use_msg);
-                handle_detect_result(output);
+                handle_detect_result(output,
+                    duration.count(),
+                    detect_image_publisher,
+                    detect_point_cloud_publisher,
+                    detect_time_publisher);
                 RCLCPP_INFO(this->get_logger(),"[%s] detect success, time use %ld ms",detector->getDetectorName().c_str(),duration.count());
             }
             else{
@@ -262,10 +287,27 @@ void DetectorManager::start_detect(){
     RCLCPP_INFO(this->get_logger(),"[start_detect] start detect %ld",detectors.size());
 }
 
-void DetectorManager::handle_detect_result(const DetectorOutput & output){
-    if(output.result_image_){
+void DetectorManager::handle_detect_result(const DetectorOutput & output, 
+    const int & detect_time,
+    rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr image_pub_,
+    rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr point_cloud_pub_,
+    rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr delay_cloud_pub_
+    ){
+    if(output.result_image_&&image_pub_){
         sensor_msgs::msg::Image::SharedPtr image_msg=cv_bridge::CvImage(std_msgs::msg::Header(),"bgr8",*output.result_image_).toImageMsg();
-        posed_image_publisher_->publish(*image_msg);
+        image_pub_->publish(*image_msg);
+    }
+    if(output.point_cloud_&&point_cloud_pub_){
+        sensor_msgs::msg::PointCloud2::SharedPtr pc_msg_=std::make_shared<sensor_msgs::msg::PointCloud2>();
+        pcl::toROSMsg(*output.point_cloud_,*pc_msg_);
+        pc_msg_->header.stamp = this->now();
+        pc_msg_->header.frame_id = image_frame;
+        point_cloud_pub_->publish(*pc_msg_);
+    }
+    if(delay_cloud_pub_){
+        std_msgs::msg::Int32 time_use_msg;
+        time_use_msg.data=detect_time;
+        delay_cloud_pub_->publish(time_use_msg);
     }
 
     geometry_msgs::msg::TransformStamped transform_stamped;

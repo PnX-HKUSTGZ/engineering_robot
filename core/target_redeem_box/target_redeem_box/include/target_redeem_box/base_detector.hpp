@@ -22,6 +22,8 @@
 #include <pcl/visualization/pcl_visualizer.h>
 #include <pcl/filters/voxel_grid.h>
 #include <pcl/filters/statistical_outlier_removal.h>
+#include <pcl/registration/icp_nl.h> 
+#include <pcl/features/normal_3d_omp.h> 
 
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
@@ -71,6 +73,7 @@ struct DetectorOutput{
     cv::Mat tvec;
     cv::Mat rvec;
     std::shared_ptr<cv::Mat> result_image_=nullptr;
+    std::shared_ptr<pcl::PointCloud<pcl::PointXYZ>> point_cloud_=nullptr;
 };
 
 class BaseDetector{

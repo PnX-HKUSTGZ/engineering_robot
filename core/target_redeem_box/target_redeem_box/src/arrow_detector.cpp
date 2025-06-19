@@ -613,6 +613,9 @@ bool ArrowDetector::loadConfig(){
         RCLCPP_ERROR(node_->get_logger(),"[loadConfig] camera_matrix size error!");
         return false;
     }
+    camera_matrix_eigen<<camera_matrix[0],camera_matrix[1],camera_matrix[2],
+        camera_matrix[3],camera_matrix[4],camera_matrix[5],
+        camera_matrix[6],camera_matrix[7],camera_matrix[8];
 
     dist_coeffs=config["dist_coeffs"].as<std::vector<double>>();
     if(dist_coeffs.size()!=5){

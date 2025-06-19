@@ -91,12 +91,32 @@ private:
 
     std::shared_ptr<rclcpp::Publisher<sensor_msgs::msg::Image>> posed_image_publisher_;
 
+    /**
+     * 点云图像同步的callback
+     */
     void image_point_cloud_callback(const sensor_msgs::msg::Image::ConstSharedPtr& image_msg, 
         const sensor_msgs::msg::PointCloud2::ConstSharedPtr& point_cloud_msg);
 
+    /**
+     * 图像信息的单独的callback
+     */
     void image_callback(const sensor_msgs::msg::Image::ConstSharedPtr& image_msg);
 
-    void handle_detect_result(const DetectorOutput & output);
+    /**
+     * @brief 处理检测结果
+     * @param output 检测器输出
+     * @param detect_time 检测器延迟
+     * @param image_pub_ 图像pub
+     * @param point_cloud_pub_ 点云pub
+     * @param delay_cloud_pub_ 延迟pub
+     * 
+     */
+    void handle_detect_result(const DetectorOutput & output, 
+        const int & detect_time,
+        rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr image_pub_=nullptr,
+        rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr point_cloud_pub_=nullptr,
+        rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr delay_cloud_pub_=nullptr
+        );
 
 // 运行时参数
 private:

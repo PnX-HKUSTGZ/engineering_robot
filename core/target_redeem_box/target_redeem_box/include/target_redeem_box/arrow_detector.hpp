@@ -131,7 +131,7 @@ protected:
         const geometry_msgs::msg::TransformStamped& transform_A_to_child);
 
 // 参数部分与运行时全局变量
-private:
+protected:
 
     // 这是一个全局的变量，储存了在detect开始时会被绑定到output_data的image里面
     cv::Mat colored_image;
@@ -182,6 +182,8 @@ private:
     std::vector<cv::Point3f> redeem_front_points;
     // 相机内参
     std::vector<double> camera_matrix;
+    // 相机内参 eigen
+    Eigen::Matrix<double,3,3> camera_matrix_eigen;
     // 相机曲变参数
     std::vector<double> dist_coeffs;
 
