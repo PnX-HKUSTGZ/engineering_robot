@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(test_model_moveit)
+project(test_robot_moveit)
 
 find_package(ament_cmake REQUIRED)
 

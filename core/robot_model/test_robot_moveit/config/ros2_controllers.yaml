@@ -6,10 +6,8 @@ controller_manager:
     arm_controller:
       type: joint_trajectory_controller/JointTrajectoryController
 
-
     chasis_controller:
       type: mecanum_drive_controller/MecanumDriveController
-
 
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
@@ -17,6 +15,7 @@ controller_manager:
 arm_controller:
   ros__parameters:
     joints:
+      - robot_base_joint_virtual
       - J1_joint
       - J2_joint
       - J3_joint
@@ -26,10 +25,13 @@ arm_controller:
       - J7_joint
     command_interfaces:
       - position
+      - velocity
+      - effort
     state_interfaces:
       - position
       - velocity
-
+      - effort
+      
 chasis_controller:
   ros__parameters:
     reference_timeout: 0.9

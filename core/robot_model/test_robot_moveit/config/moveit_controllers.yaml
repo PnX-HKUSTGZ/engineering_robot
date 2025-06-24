@@ -10,6 +10,7 @@ moveit_simple_controller_manager:
   arm_controller:
     type: FollowJointTrajectory
     joints:
+      - robot_base_joint_virtual
       - J1_joint
       - J2_joint
       - J3_joint

@@ -10,56 +10,56 @@ default_acceleration_scaling_factor: 0.1
 joint_limits:
   J1_joint:
     has_velocity_limits: false
-    max_velocity: 0.
+    max_velocity: 0
     has_acceleration_limits: false
-    max_acceleration: 0.
+    max_acceleration: 0
   J2_joint:
     has_velocity_limits: false
-    max_velocity: 0.
+    max_velocity: 0
     has_acceleration_limits: false
-    max_acceleration: 0.
+    max_acceleration: 0
   J3_joint:
     has_velocity_limits: false
-    max_velocity: 0.
+    max_velocity: 0
     has_acceleration_limits: false
-    max_acceleration: 0.
+    max_acceleration: 0
   J4_joint:
     has_velocity_limits: false
-    max_velocity: 0.
+    max_velocity: 0
     has_acceleration_limits: false
-    max_acceleration: 0.
+    max_acceleration: 0
   J5_joint:
     has_velocity_limits: false
-    max_velocity: 0.
+    max_velocity: 0
     has_acceleration_limits: false
-    max_acceleration: 0.
+    max_acceleration: 0
   J6_joint:
     has_velocity_limits: false
-    max_velocity: 0.
+    max_velocity: 0
     has_acceleration_limits: false
-    max_acceleration: 0.
+    max_acceleration: 0
   J7_joint:
     has_velocity_limits: false
-    max_velocity: 0.
+    max_velocity: 0
     has_acceleration_limits: false
-    max_acceleration: 0.
+    max_acceleration: 0
   left_after_joint:
     has_velocity_limits: false
-    max_velocity: 0.
+    max_velocity: 0
     has_acceleration_limits: false
-    max_acceleration: 0.
+    max_acceleration: 0
   left_before_joint:
     has_velocity_limits: false
-    max_velocity: 0.
+    max_velocity: 0
     has_acceleration_limits: false
-    max_acceleration: 0.
+    max_acceleration: 0
   right_after_joint:
     has_velocity_limits: false
-    max_velocity: 0.
+    max_velocity: 0
     has_acceleration_limits: false
-    max_acceleration: 0.
+    max_acceleration: 0
   right_before_joint:
     has_velocity_limits: false
-    max_velocity: 0.
+    max_velocity: 0
     has_acceleration_limits: false
-    max_acceleration: 0.
+    max_acceleration: 0
