@@ -10,7 +10,7 @@ controller_manager:
       type: joint_trajectory_controller/JointTrajectoryController
 
     chasis_wheels_controller:
-      type: mecanum_drive_controller/MecanumDriveController
+      type: mecanum_chasis_drive_controller/MecanumChasisDriveController
 
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
