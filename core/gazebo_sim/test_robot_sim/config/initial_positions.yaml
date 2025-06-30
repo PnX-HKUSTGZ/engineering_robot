@@ -1,0 +1,15 @@
+# Default initial positions for test_robot's ros2_control fake system
+
+initial_positions:
+  J1_joint: 0
+  J2_joint: 0
+  J3_joint: 0
+  J4_joint: 0
+  J5_joint: 0
+  J6_joint: 0
+  J7_joint: 0
+  dummy_virtual_joint: 0
+  left_after_joint: 0
+  right_after_joint: 0
+  left_before_joint: 0
+  right_before_joint: 0

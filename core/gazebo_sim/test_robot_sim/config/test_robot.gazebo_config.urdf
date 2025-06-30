@@ -1,0 +1,8 @@
+<gazebo>
+    <plugin filename="gz_ros2_control-system" name="gz_ros2_control::GazeboSimROS2ControlPlugin">
+        <parameters>$(find test_robot_sim)/config/ros2_controllers.yaml</parameters>
+        <ros>
+            <namespace>test_robot</namespace>
+        </ros>
+    </plugin>
+</gazebo>

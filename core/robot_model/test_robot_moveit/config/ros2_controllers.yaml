@@ -7,7 +7,7 @@ controller_manager:
       type: joint_trajectory_controller/JointTrajectoryController
 
     chasis_controller:
-      type: mecanum_chasis_drive_controller/MecanumChasisDriveController
+      type: mecanum_drive_controller/MecanumDriveController
 
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
@@ -31,8 +31,6 @@ arm_controller:
 
 chasis_controller:
   ros__parameters:
-    action_monitor_rate: 100
-    chasis_joint_name: "dummy_virtual_joint"
     reference_timeout: 0.9
 
     front_left_wheel_command_joint_name: "left_before_joint"
