@@ -8,32 +8,31 @@ from ament_index_python.packages import get_package_share_directory
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 from launch_ros.parameter_descriptions import ParameterValue
+import xacro
+import os
+
+'''
+
+这个文件只会启动有关于gazebo的部分，但是不会启动gazebo模拟器本身
+
+'''
 
 def generate_launch_description():
 
-    robot_description_content = Command(
-        [
-            PathJoinSubstitution([FindExecutable(name='xacro')]),
-            ' ',
-            PathJoinSubstitution(
-                [FindPackageShare('test_robot_sim'),
-                 'config', 'test_robot.urdf.xacro']
-            ),
-        ]
+    test_robot_urdf_path = os.path.join(
+        get_package_share_directory("test_robot_sim"),
+        "config",
+        "test_robot.urdf.xacro"
     )
 
-    # robot_description_content=ParameterValue(
-    #     PythonExpression([
-    #         "str(",
-    #         robot_description_content,
-    #         ").replace('package://",
-    #         "test_robot", 
-    #         "', str('",            
-    #         FindPackageShare('test_robot'),        
-    #         "'))"                            
-    #     ]),
-    #     value_type=str
-    # )
+    robot_description_content = xacro.process_file(test_robot_urdf_path).toprettyxml(indent="  ") # type: ignore
+
+    resolved_test_robot_path = get_package_share_directory('test_robot')
+
+    robot_description_content = str(robot_description_content).replace(
+        "package://test_robot",
+        resolved_test_robot_path,
+    )
 
     joint_state_frame_prefix={"frame_prefix":"test_robot/"}
     namespace="test_robot/"
@@ -48,7 +47,6 @@ def generate_launch_description():
         ]
     )
 
-    # 
     node_robot_state_publisher = Node(
         package='robot_state_publisher',
         executable='robot_state_publisher',

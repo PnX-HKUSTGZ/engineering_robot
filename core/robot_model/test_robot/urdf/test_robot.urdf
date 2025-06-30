@@ -35,7 +35,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="$(find test_robot)/meshes/robot_base_link.STL" />
+          filename="package://test_robot/meshes/robot_base_link.STL" />
       </geometry>
       <material
         name="">
@@ -49,7 +49,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="$(find test_robot)/meshes/robot_base_link.STL" />
+          filename="package://test_robot/meshes/robot_base_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -75,7 +75,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="$(find test_robot)/meshes/left_after_link.STL" />
+          filename="package://test_robot/meshes/left_after_link.STL" />
       </geometry>
       <material
         name="">
@@ -89,7 +89,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="$(find test_robot)/meshes/left_after_link.STL" />
+          filename="package://test_robot/meshes/left_after_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -128,7 +128,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="$(find test_robot)/meshes/left_befor_link.STL" />
+          filename="package://test_robot/meshes/left_befor_link.STL" />
       </geometry>
       <material
         name="">
@@ -142,7 +142,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="$(find test_robot)/meshes/left_befor_link.STL" />
+          filename="package://test_robot/meshes/left_befor_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -181,7 +181,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="$(find test_robot)/meshes/right_before_link.STL" />
+          filename="package://test_robot/meshes/right_before_link.STL" />
       </geometry>
       <material
         name="">
@@ -195,7 +195,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="$(find test_robot)/meshes/right_before_link.STL" />
+          filename="package://test_robot/meshes/right_before_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -234,7 +234,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="$(find test_robot)/meshes/right_after_link.STL" />
+          filename="package://test_robot/meshes/right_after_link.STL" />
       </geometry>
       <material
         name="">
@@ -248,7 +248,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="$(find test_robot)/meshes/right_after_link.STL" />
+          filename="package://test_robot/meshes/right_after_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -287,7 +287,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="$(find test_robot)/meshes/J1_link.STL" />
+          filename="package://test_robot/meshes/J1_link.STL" />
       </geometry>
       <material
         name="">
@@ -301,7 +301,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="$(find test_robot)/meshes/J1_link.STL" />
+          filename="package://test_robot/meshes/J1_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -345,7 +345,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="$(find test_robot)/meshes/J2_link.STL" />
+          filename="package://test_robot/meshes/J2_link.STL" />
       </geometry>
       <material
         name="">
@@ -359,7 +359,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="$(find test_robot)/meshes/J2_link.STL" />
+          filename="package://test_robot/meshes/J2_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -403,7 +403,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="$(find test_robot)/meshes/J3_link.STL" />
+          filename="package://test_robot/meshes/J3_link.STL" />
       </geometry>
       <material
         name="">
@@ -417,7 +417,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="$(find test_robot)/meshes/J3_link.STL" />
+          filename="package://test_robot/meshes/J3_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -461,7 +461,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="$(find test_robot)/meshes/J4_link.STL" />
+          filename="package://test_robot/meshes/J4_link.STL" />
       </geometry>
       <material
         name="">
@@ -475,7 +475,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="$(find test_robot)/meshes/J4_link.STL" />
+          filename="package://test_robot/meshes/J4_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -514,7 +514,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="$(find test_robot)/meshes/J5_link.STL" />
+          filename="package://test_robot/meshes/J5_link.STL" />
       </geometry>
       <material
         name="">
@@ -528,7 +528,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="$(find test_robot)/meshes/J5_link.STL" />
+          filename="package://test_robot/meshes/J5_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -572,7 +572,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="$(find test_robot)/meshes/J6_link.STL" />
+          filename="package://test_robot/meshes/J6_link.STL" />
       </geometry>
       <material
         name="">
@@ -586,7 +586,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="$(find test_robot)/meshes/J6_link.STL" />
+          filename="package://test_robot/meshes/J6_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -630,7 +630,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="$(find test_robot)/meshes/J7_link.STL" />
+          filename="package://test_robot/meshes/J7_link.STL" />
       </geometry>
       <material
         name="">
@@ -644,7 +644,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="$(find test_robot)/meshes/J7_link.STL" />
+          filename="package://test_robot/meshes/J7_link.STL" />
       </geometry>
     </collision>
   </link>
