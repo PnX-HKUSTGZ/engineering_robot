@@ -29,10 +29,10 @@ def generate_launch_description():
 
     resolved_test_robot_path = get_package_share_directory('test_robot')
 
-    robot_description_content = str(robot_description_content).replace(
-        "package://test_robot",
-        resolved_test_robot_path,
-    )
+    # robot_description_content = str(robot_description_content).replace(
+    #     "$(find test_robot)",
+    #     resolved_test_robot_path,
+    # )
 
     joint_state_frame_prefix={"frame_prefix":"test_robot/"}
     namespace="test_robot/"

@@ -52,3 +52,58 @@
       enable_odom_tf: true
 
       cmd_vel_timeout: 0.5 # seconds
+# This config file is used by ros2_control
+
+
+controller_manager:
+  ros__parameters:
+    update_rate: 1000  # Hz
+
+    arm_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+
+    chasis_controller:
+      type:  diff_drive_controller/DiffDriveController
+
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+arm_controller:
+  ros__parameters:
+    joints:
+      - J1_joint
+      - J2_joint
+      - J3_joint
+      - J4_joint
+      - J5_joint
+      - J6_joint
+      - J7_joint
+    command_interfaces:
+      - position
+      - velocity
+    state_interfaces:
+      - position
+      - velocity
+
+chasis_controller:
+  ros__parameters:
+    left_wheel_names: ["left_before_joint","left_after_joint"]
+    right_wheel_names: ["right_before_joint","right_after_joint"]
+    wheel_separation: 0.509
+    wheels_per_side: 2
+    wheel_radius: 0.15
+
+    wheel_separation_multiplier: 1.0
+    left_wheel_radius_multiplier: 1.0
+    right_wheel_radius_multiplier: 1.0
+
+    odom_frame_id: map
+    base_frame_id: robot_base_chase_link
+    pose_covariance_diagonal: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    twist_covariance_diagonal: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+
+    position_feedback: true
+    open_loop: false
+    enable_odom_tf: true
+
+    cmd_vel_timeout: 0.5 # seconds

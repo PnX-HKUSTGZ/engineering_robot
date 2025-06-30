@@ -35,7 +35,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://test_robot/meshes/robot_base_link.STL" />
+          filename="file://$(find test_robot)/meshes/robot_base_link.STL" />
       </geometry>
       <material
         name="">
@@ -49,7 +49,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://test_robot/meshes/robot_base_link.STL" />
+          filename="file://$(find test_robot)/meshes/robot_base_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -75,7 +75,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://test_robot/meshes/left_after_link.STL" />
+          filename="file://$(find test_robot)/meshes/left_after_link.STL" />
       </geometry>
       <material
         name="">
@@ -89,7 +89,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://test_robot/meshes/left_after_link.STL" />
+          filename="file://$(find test_robot)/meshes/left_after_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -128,7 +128,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://test_robot/meshes/left_befor_link.STL" />
+          filename="file://$(find test_robot)/meshes/left_befor_link.STL" />
       </geometry>
       <material
         name="">
@@ -142,7 +142,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://test_robot/meshes/left_befor_link.STL" />
+          filename="file://$(find test_robot)/meshes/left_befor_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -181,7 +181,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://test_robot/meshes/right_before_link.STL" />
+          filename="file://$(find test_robot)/meshes/right_before_link.STL" />
       </geometry>
       <material
         name="">
@@ -195,7 +195,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://test_robot/meshes/right_before_link.STL" />
+          filename="file://$(find test_robot)/meshes/right_before_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -234,7 +234,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://test_robot/meshes/right_after_link.STL" />
+          filename="file://$(find test_robot)/meshes/right_after_link.STL" />
       </geometry>
       <material
         name="">
@@ -248,7 +248,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://test_robot/meshes/right_after_link.STL" />
+          filename="file://$(find test_robot)/meshes/right_after_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -287,7 +287,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://test_robot/meshes/J1_link.STL" />
+          filename="file://$(find test_robot)/meshes/J1_link.STL" />
       </geometry>
       <material
         name="">
@@ -301,13 +301,14 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://test_robot/meshes/J1_link.STL" />
+          filename="file://$(find test_robot)/meshes/J1_link.STL" />
       </geometry>
     </collision>
   </link>
   <joint
     name="J1_joint"
     type="revolute">
+    <dynamics damping="0.1" friction="0.0"/>
     <origin
       xyz="0.147839868141125 0.00319255080494721 0.108472985824806"
       rpy="0 0 1.5707963267949" />
@@ -320,8 +321,8 @@
     <limit
       lower="-1.1775"
       upper="1.1775"
-      effort="0"
-      velocity="0" />
+      effort="4"
+      velocity="4" />
   </joint>
   <link
     name="J2_link">
@@ -345,7 +346,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://test_robot/meshes/J2_link.STL" />
+          filename="file://$(find test_robot)/meshes/J2_link.STL" />
       </geometry>
       <material
         name="">
@@ -359,13 +360,14 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://test_robot/meshes/J2_link.STL" />
+          filename="file://$(find test_robot)/meshes/J2_link.STL" />
       </geometry>
     </collision>
   </link>
   <joint
     name="J2_joint"
     type="revolute">
+    <dynamics damping="0.1" friction="0.0"/>
     <origin
       xyz="0.0815435988166945 -0.00416701236161837 0.102"
       rpy="-1.5707963267949 0 1.51973909018581" />
@@ -378,8 +380,8 @@
     <limit
       lower="-3.14"
       upper="3.14"
-      effort="0"
-      velocity="0" />
+      effort="4"
+      velocity="4" />
   </joint>
   <link
     name="J3_link">
@@ -403,7 +405,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://test_robot/meshes/J3_link.STL" />
+          filename="file://$(find test_robot)/meshes/J3_link.STL" />
       </geometry>
       <material
         name="">
@@ -417,13 +419,14 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://test_robot/meshes/J3_link.STL" />
+          filename="file://$(find test_robot)/meshes/J3_link.STL" />
       </geometry>
     </collision>
   </link>
   <joint
     name="J3_joint"
     type="revolute">
+    <dynamics damping="0.1" friction="0.0"/>
     <origin
       xyz="-0.297380428115131 -0.143055517104597 0.0288999999999909"
       rpy="0 0 0" />
@@ -436,8 +439,8 @@
     <limit
       lower="-3.14"
       upper="3.14"
-      effort="0"
-      velocity="0" />
+      effort="4"
+      velocity="4" />
   </joint>
   <link
     name="J4_link">
@@ -461,7 +464,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://test_robot/meshes/J4_link.STL" />
+          filename="file://$(find test_robot)/meshes/J4_link.STL" />
       </geometry>
       <material
         name="">
@@ -475,13 +478,14 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://test_robot/meshes/J4_link.STL" />
+          filename="file://$(find test_robot)/meshes/J4_link.STL" />
       </geometry>
     </collision>
   </link>
   <joint
     name="J4_joint"
     type="continuous">
+    <dynamics damping="0.1" friction="0.0"/>
     <origin
       xyz="-0.0520591601532436 0.1152913433183 0.0550000000000078"
       rpy="1.57079632679501 1.52425622041413 0.424137505817387" />
@@ -514,7 +518,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://test_robot/meshes/J5_link.STL" />
+          filename="file://$(find test_robot)/meshes/J5_link.STL" />
       </geometry>
       <material
         name="">
@@ -528,13 +532,14 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://test_robot/meshes/J5_link.STL" />
+          filename="file://$(find test_robot)/meshes/J5_link.STL" />
       </geometry>
     </collision>
   </link>
   <joint
     name="J5_joint"
     type="revolute">
+    <dynamics damping="0.1" friction="0.0"/>
     <origin
       xyz="0.0423315447474402 0.00378025386648639 -0.0600000000000362"
       rpy="1.5707963267949 -0.231927791500107 -1.48173147181141" />
@@ -547,8 +552,8 @@
     <limit
       lower="-3.14"
       upper="3.14"
-      effort="0"
-      velocity="0" />
+      effort="4"
+      velocity="4" />
   </joint>
   <link
     name="J6_link">
@@ -572,7 +577,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://test_robot/meshes/J6_link.STL" />
+          filename="file://$(find test_robot)/meshes/J6_link.STL" />
       </geometry>
       <material
         name="">
@@ -586,13 +591,14 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://test_robot/meshes/J6_link.STL" />
+          filename="file://$(find test_robot)/meshes/J6_link.STL" />
       </geometry>
     </collision>
   </link>
   <joint
     name="J6_joint"
     type="revolute">
+    <dynamics damping="0.1" friction="0.0"/>
     <origin
       xyz="0.15026 -0.061881 -0.0155"
       rpy="0 0 0" />
@@ -605,8 +611,8 @@
     <limit
       lower="-3.14"
       upper="3.14"
-      effort="0"
-      velocity="0" />
+      effort="4"
+      velocity="4" />
   </joint>
   <link
     name="J7_link">
@@ -630,7 +636,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://test_robot/meshes/J7_link.STL" />
+          filename="file://$(find test_robot)/meshes/J7_link.STL" />
       </geometry>
       <material
         name="">
@@ -644,13 +650,14 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://test_robot/meshes/J7_link.STL" />
+          filename="file://$(find test_robot)/meshes/J7_link.STL" />
       </geometry>
     </collision>
   </link>
   <joint
     name="J7_joint"
     type="continuous">
+    <dynamics damping="0.1" friction="0.0"/>
     <origin
       xyz="-0.039437 -0.046537 0.0516"
       rpy="-1.5708 1.5009 -0.70299" />
