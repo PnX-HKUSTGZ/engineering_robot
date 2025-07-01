@@ -156,7 +156,6 @@ def generate_moveit_launch_description():
         # Set the display variable, in case OpenGL code is used internally
         additional_env={"DISPLAY": os.environ.get("DISPLAY", "")},
         namespace=namespace,
-
     )
 
     # rviz

@@ -143,7 +143,7 @@ Visualization Manager:
         Show Trail: false
         State Display Time: 0.05 s
         Trail Step Size: 1
-        Trajectory Topic: display_planned_path
+        Trajectory Topic: /exchange_station/display_planned_path
         Use Sim Time: false
       Planning Metrics:
         Payload: 1
@@ -164,7 +164,7 @@ Visualization Manager:
         Show Workspace: false
         Start State Alpha: 1
         Start State Color: 0; 255; 0
-      Planning Scene Topic: monitored_planning_scene
+      Planning Scene Topic: /exchange_station/monitored_planning_scene
       Robot Description: exchange_station_robot_description
       Scene Geometry:
         Scene Alpha: 1
@@ -348,7 +348,7 @@ Visualization Manager:
       Name: Current View
       Near Clip Distance: 0.009999999776482582
       Pitch: 0.4650000333786011
-      Target Frame: map
+      Target Frame: dummy_link
       Value: Orbit (rviz_default_plugins)
       Yaw: 5.890189170837402
     Saved: ~

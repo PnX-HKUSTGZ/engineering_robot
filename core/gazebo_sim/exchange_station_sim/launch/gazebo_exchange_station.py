@@ -109,9 +109,9 @@ def generate_gazebo_launch_description():
         executable='robot_state_publisher',
         output='screen',
         parameters=[robot_description,],
-        remappings=[
-            ("robot_description", f"{robot_name}_robot_description"),
-            ],
+        # remappings=[
+        #     ("robot_description", f"{robot_name}_robot_description"),
+        #     ],
         namespace=namespace,
     )
     ld.add_action(node_robot_state_publisher)
@@ -120,7 +120,7 @@ def generate_gazebo_launch_description():
         package='ros_gz_sim',
         executable='create',
         output='screen',
-        arguments=['-topic', f"{robot_name}_robot_description",
+        arguments=['-topic', f"robot_description",
                    '-name', robot_name, '-allow_renaming', 'true'],
         namespace=namespace,
     )
