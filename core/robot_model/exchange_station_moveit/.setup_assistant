@@ -1,0 +1,27 @@
+moveit_setup_assistant_config:
+  urdf:
+    package: exchange_station
+    relative_path: urdf/exchange_station.urdf
+  srdf:
+    relative_path: config/exchange_station.srdf
+  package_settings:
+    author_name: lqx
+    author_email: 183842220@qq.com
+    generated_timestamp: 1751295289
+  control_xacro:
+    command:
+      - position
+      - velocity
+    state:
+      - position
+      - velocity
+  modified_urdf:
+    xacros:
+      - control_xacro
+  control_xacro:
+    command:
+      - position
+      - velocity
+    state:
+      - position
+      - velocity

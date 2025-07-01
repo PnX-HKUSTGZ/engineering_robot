@@ -4,6 +4,15 @@
      For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
 <robot
   name="exchange_station">
+  <link name="dummy_link"/>
+  <joint name="dummy_joint" type="fixed">
+    <parent link="dummy_link"/>
+    <child link="base_link"/>
+    <origin
+      xyz="0 0 0.15"
+      rpy="0 0 0" />
+  </joint>
+
   <link
     name="base_link">
     <inertial>
@@ -26,7 +35,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://exchange_station/meshes/base_link.STL" />
+          filename="file://$(find exchange_station)/meshes/base_link.STL" />
       </geometry>
       <material
         name="">
@@ -34,15 +43,15 @@
           rgba="0 0 0 1" />
       </material>
     </visual>
-    <!-- <collision>
+    <collision>
       <origin
         xyz="0 0 0"
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://exchange_station/meshes/base_link.STL" />
+          filename="file://$(find exchange_station)/meshes/base_link.STL" />
       </geometry>
-    </collision> -->
+    </collision>
   </link>
   <link
     name="L1">
@@ -66,7 +75,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://exchange_station/meshes/L1.STL" />
+          filename="file://$(find exchange_station)/meshes/L1.STL" />
       </geometry>
       <material
         name="black">
@@ -80,7 +89,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://exchange_station/meshes/L1.STL" />
+          filename="file://$(find exchange_station)/meshes/L1.STL" />
       </geometry>
     </collision>
   </link>
@@ -120,7 +129,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://exchange_station/meshes/L2.STL" />
+          filename="file://$(find exchange_station)/meshes/L2.STL" />
       </geometry>
       <material
         name="black">
@@ -134,7 +143,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://exchange_station/meshes/L2.STL" />
+          filename="file://$(find exchange_station)/meshes/L2.STL" />
       </geometry>
     </collision>
   </link>
@@ -174,7 +183,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://exchange_station/meshes/L3.STL" />
+          filename="file://$(find exchange_station)/meshes/L3.STL" />
       </geometry>
       <material
         name="black">
@@ -188,7 +197,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://exchange_station/meshes/L3.STL" />
+          filename="file://$(find exchange_station)/meshes/L3.STL" />
       </geometry>
     </collision>
   </link>
@@ -227,7 +236,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://exchange_station/meshes/L4.STL" />
+          filename="file://$(find exchange_station)/meshes/L4.STL" />
       </geometry>
       <material
         name="black">
@@ -241,7 +250,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://exchange_station/meshes/L4.STL" />
+          filename="file://$(find exchange_station)/meshes/L4.STL" />
       </geometry>
     </collision>
   </link>
@@ -281,7 +290,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://exchange_station/meshes/L_R.STL" />
+          filename="file://$(find exchange_station)/meshes/L_R.STL" />
       </geometry>
       <material
         name="white">
@@ -295,7 +304,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://exchange_station/meshes/L_R.STL" />
+          filename="file://$(find exchange_station)/meshes/L_R.STL" />
       </geometry>
     </collision>
   </link>
@@ -334,7 +343,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://exchange_station/meshes/L5.STL" />
+          filename="file://$(find exchange_station)/meshes/L5.STL" />
       </geometry>
       <material
         name="black">
@@ -348,7 +357,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://exchange_station/meshes/L5.STL" />
+          filename="file://$(find exchange_station)/meshes/L5.STL" />
       </geometry>
     </collision>
   </link>
@@ -388,7 +397,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://exchange_station/meshes/L6.STL" />
+          filename="file://$(find exchange_station)/meshes/L6.STL" />
       </geometry>
       <material
         name="black">
@@ -402,7 +411,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://exchange_station/meshes/L6.STL" />
+          filename="file://$(find exchange_station)/meshes/L6.STL" />
       </geometry>
     </collision>
   </link>
@@ -442,7 +451,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://exchange_station/meshes/L7.STL" />
+          filename="file://$(find exchange_station)/meshes/L7.STL" />
       </geometry>
       <material
         name="black">
@@ -456,7 +465,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://exchange_station/meshes/L7.STL" />
+          filename="file://$(find exchange_station)/meshes/L7.STL" />
       </geometry>
     </collision>
   </link>
@@ -495,7 +504,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://exchange_station/meshes/L_lighit.STL" />
+          filename="file://$(find exchange_station)/meshes/L_lighit.STL" />
       </geometry>
       <material
         name="blue">
@@ -509,7 +518,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://exchange_station/meshes/L_lighit.STL" />
+          filename="file://$(find exchange_station)/meshes/L_lighit.STL" />
       </geometry>
     </collision>
   </link>
@@ -548,7 +557,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://exchange_station/meshes/L_RFID.STL" />
+          filename="file://$(find exchange_station)/meshes/L_RFID.STL" />
       </geometry>
       <material
         name="black">
@@ -562,7 +571,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://exchange_station/meshes/L_RFID.STL" />
+          filename="file://$(find exchange_station)/meshes/L_RFID.STL" />
       </geometry>
     </collision>
   </link>
@@ -601,7 +610,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://exchange_station/meshes/L3_light.STL" />
+          filename="file://$(find exchange_station)/meshes/L3_light.STL" />
       </geometry>
       <material
         name="blue">
@@ -615,7 +624,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://exchange_station/meshes/L3_light.STL" />
+          filename="file://$(find exchange_station)/meshes/L3_light.STL" />
       </geometry>
     </collision>
   </link>
@@ -654,7 +663,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://exchange_station/meshes/L2_light.STL" />
+          filename="file://$(find exchange_station)/meshes/L2_light.STL" />
       </geometry>
       <material
         name="blue">
@@ -668,7 +677,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://exchange_station/meshes/L2_light.STL" />
+          filename="file://$(find exchange_station)/meshes/L2_light.STL" />
       </geometry>
     </collision>
   </link>
@@ -707,7 +716,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://exchange_station/meshes/L_base.STL" />
+          filename="file://$(find exchange_station)/meshes/L_base.STL" />
       </geometry>
       <material
         name="">
@@ -721,7 +730,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://exchange_station/meshes/L_base.STL" />
+          filename="file://$(find exchange_station)/meshes/L_base.STL" />
       </geometry>
     </collision>
   </link>
@@ -760,7 +769,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://exchange_station/meshes/L_base_light.STL" />
+          filename="file://$(find exchange_station)/meshes/L_base_light.STL" />
       </geometry>
       <material
         name="blue">
@@ -774,7 +783,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://exchange_station/meshes/L_base_light.STL" />
+          filename="file://$(find exchange_station)/meshes/L_base_light.STL" />
       </geometry>
     </collision>
   </link>
