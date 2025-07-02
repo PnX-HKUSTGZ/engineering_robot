@@ -317,7 +317,7 @@ Visualization Manager:
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
-    Fixed Frame: dummy_link
+    Fixed Frame: exchange_station_dummy_link
     Frame Rate: 30
   Name: root
   Tools:
@@ -348,7 +348,7 @@ Visualization Manager:
       Name: Current View
       Near Clip Distance: 0.009999999776482582
       Pitch: 0.4650000333786011
-      Target Frame: dummy_link
+      Target Frame: exchange_station_dummy_link
       Value: Orbit (rviz_default_plugins)
       Yaw: 5.890189170837402
     Saved: ~
