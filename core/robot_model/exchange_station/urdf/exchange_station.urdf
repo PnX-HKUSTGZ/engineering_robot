@@ -13,6 +13,15 @@
       rpy="0 0 0" />
   </joint>
 
+  <link name="exchange_station_root_link"/>
+  <joint name="exchange_station_root_joint" type="fixed">
+    <parent link="exchange_station_dummy_link"/>
+    <child link="exchange_station_root_link"/>
+    <origin
+      xyz="1.4 0 0"
+      rpy="0 0 0" />
+  </joint>
+
   <link
     name="exchange_station_base_link">
     <inertial>
