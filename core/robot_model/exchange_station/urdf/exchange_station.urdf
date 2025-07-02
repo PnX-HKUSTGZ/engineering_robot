@@ -491,6 +491,16 @@
     <axis
       xyz="0 0 -1" />
   </joint>
+  
+  <link name="box_center_link"/>
+  <joint name="box_center_joint" type="fixed">
+    <parent link="L7"/>
+    <child link="box_center_link"/>
+    <origin
+      xyz="0.2 0.07 0"
+      rpy="-1.5707963267949 0 1.5707963267949" />
+  </joint>
+
   <link
     name="L_lighit">
     <inertial>
