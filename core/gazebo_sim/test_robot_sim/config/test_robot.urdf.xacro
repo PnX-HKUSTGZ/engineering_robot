@@ -3,6 +3,7 @@
     <xacro:arg name="initial_positions_file" default="initial_positions.yaml" />
 
     <xacro:include filename="$(find test_robot)/urdf/test_robot.urdf" />
+    <xacro:include filename="sensor_config.urdf" />
 
     <xacro:include filename="test_robot.ros2_control.xacro" />
 

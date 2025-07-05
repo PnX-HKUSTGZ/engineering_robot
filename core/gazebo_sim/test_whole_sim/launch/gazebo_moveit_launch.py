@@ -394,5 +394,32 @@ def generate_launch_description():
 
     ld.add_action(bridge)
 
+    imu_bridge = Node(
+        package='ros_gz_bridge',
+        executable='parameter_bridge',
+        arguments=['/test_robot/imu@sensor_msgs/msg/Imu[gz.msgs.IMU'],
+        output='screen'
+    )
+
+    ld.add_action(imu_bridge)
+
+    # lidar_bridge = Node(
+    #     package='ros_gz_bridge',
+    #     executable='parameter_bridge',
+    #     arguments=['/test_robot/lidar@sensor_msgs/msg/LaserScan[gz.msgs.LaserScan'],
+    #     output='screen'
+    # )
+
+    # ld.add_action(lidar_bridge)
+
+
+    pc2_bridge = Node(
+        package='ros_gz_bridge',
+        executable='parameter_bridge',
+        arguments=['/test_robot/lidar/points@sensor_msgs/msg/PointCloud2[gz.msgs.PointCloudPacked'],
+        output='screen'
+    )
+
+    ld.add_action(pc2_bridge)
 
     return ld
