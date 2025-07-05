@@ -1,8 +1,8 @@
 topics:
-  image: "/sensor/camera/images"
+  image: "/test_robot/image/image"
   point_cloud: "sensor/RealSense/point_cloud"
 tf_frames:
-  image: "sensor/camera"
+  image: "image_sensor_link"
   point_cloud: "sensor/mid360"
 input_data_time_out: [0,50000000] # int32 [s.ns] 
 
@@ -17,7 +17,7 @@ detectors: [
 
 detector_config:
   arrow_detector:
-    BinaryThresholdThresh: 200.
+    BinaryThresholdThresh: 130.
     BinaryThresholdMaxval: 300.
     approxPolyDPEpsilon: 10.
     LongShortRateMin: 5.0

@@ -37,12 +37,7 @@ void ArrowDetector::imagePreprocess(const cv::Mat & pre_image, cv::Mat & pos_ima
 
     cv::Mat GreyImage(SplitImage[0].size(),SplitImage[0].type());
 
-    cv::mixChannels(std::vector<cv::Mat>{SplitImage[0],SplitImage[2]},
-        std::vector<cv::Mat>{GreyImage},
-        std::vector<int>{
-            0,0,
-            1,0
-    });
+    cv::addWeighted(SplitImage[0], 1, SplitImage[2], 1, 0, GreyImage);
 
     // 高斯滤波
     cv::Mat& GaussBinaryImage = gray_image;
@@ -491,6 +486,12 @@ bool ArrowDetector::detect(InputData input_data, DetectorOutput& output_data){
         RCLCPP_ERROR(node_->get_logger(), "[detect] imagePreprocess fail! %s",e.what());
         return false;
     }
+
+    cv::imshow("binary_image",binary_image);
+    cv::imshow("gray_image",gray_image);
+    cv::imshow("colored_image",colored_image);
+    cv::waitKey(1);
+
 
     Counter2f corners;
 

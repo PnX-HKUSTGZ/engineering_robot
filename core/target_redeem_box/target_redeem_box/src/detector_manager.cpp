@@ -26,8 +26,8 @@ DetectorManager::DetectorManager(rclcpp::NodeOptions options) : rclcpp::Node("ta
 
     try{
     image_topic=config["topics"]["image"].as<std::string>();
-    image_frame=config["topics"]["point_cloud"].as<std::string>();
-    point_cloud_topic=config["tf_frames"]["image"].as<std::string>();
+    image_frame=config["tf_frames"]["image"].as<std::string>();
+    point_cloud_topic=config["topics"]["point_cloud"].as<std::string>();
     point_cloud_frame=config["tf_frames"]["point_cloud"].as<std::string>();
     input_data_time_out = rclcpp::Duration::from_seconds(config["input_data_time_out"].as<std::vector<int>>()[0]) + 
         rclcpp::Duration::from_nanoseconds(config["input_data_time_out"].as<std::vector<int>>()[1]);
