@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 # ---
 # A script to set up a development environment for robotmaster pnx engineering robot.
@@ -8,7 +8,7 @@
 # ---
 
 set -e
-set -u
+# set -u
 set -o pipefail
 
 assume_yes=false
@@ -97,6 +97,7 @@ apt_source_setup(){
 }
 
 ros2_install(){
+    export DEBIAN_FRONTEND=noninteractive
     # 设置 locale 保证支持 UTF-8
     locale
     "${SUDO_CMD[@]}" apt-get update && "${SUDO_CMD[@]}" apt-get install -y locales
@@ -111,6 +112,8 @@ ros2_install(){
     "${SUDO_CMD[@]}" apt-get install -y tzdata
     "${SUDO_CMD[@]}" ln -snf "/usr/share/zoneinfo/$TIMEZONE" /etc/localtime
     "${SUDO_CMD[@]}" echo "$TIMEZONE" > /etc/timezone
+
+    unset DEBIAN_FRONTEND
 
     # 导入ros2 apt 密钥
     "${SUDO_CMD[@]}" apt-get update && "${SUDO_CMD[@]}" apt-get install curl -y
@@ -149,11 +152,29 @@ ros2_install(){
         info "Skipping adding source to ~/.bashrc."
     fi
 
+    # 安装 rosdepc 并且配置环境
+    apt_install python3-pip
+    "${SUDO_CMD[@]}" pip install rosdepc
+
+    "${SUDO_CMD[@]}" rosdepc init
+    rosdepc update
+
+    # 安装 colcon
+
+    apt_install python3-colcon-common-extensions
+
     # 安装 ros2 额外工具
 
     apt_install ros-humble-asio-cmake-module
     apt_install ros-humble-serial-driver
     apt_install ros-humble-rosbridge-server
+    apt_install ros-humble-xacro
+
+    # ros2 control
+    apt_install ros-humble-ros2-control
+    apt_install ros-humble-ros2-controllers
+
+    source /opt/ros/humble/setup.bash
 
     info "ROS 2 Humble installation completed successfully."
 
@@ -186,6 +207,22 @@ base_tools_install() {
 }
 
 yaml_install(){
+
+    # 安装 yaml-cpp 0.8.0
+
+    # 检查 /tmp/yaml-cpp-0.8.0 是否存在，如果存在则删除
+    if [ -d "/tmp/yaml-cpp-0.8.0" ]; then
+        if confirm "Directory /tmp/yaml-cpp-0.8.0 already exists. Do you want to delete it?" ; then
+            rm -rf /tmp/yaml-cpp-0.8.0 || {
+                error "Failed to delete /tmp/yaml-cpp-0.8.0. Please check your permissions or if the directory exists."
+            }
+            info "Deleted existing /tmp/yaml-cpp-0.8.0 directory."
+        else
+            info "Skipping deletion of /tmp/yaml-cpp-0.8.0 directory."
+            return 0
+        fi
+    fi
+
     # 从源码安装yaml-cpp (Install yaml-cpp)
     yaml_name="yaml-cpp-0.8.0"
     tar_file="0.8.0.tar.gz"
@@ -193,7 +230,10 @@ yaml_install(){
     wget -O /tmp/${tar_file} https://github.com/jbeder/yaml-cpp/archive/refs/tags/${tar_file} || {
         error "Failed to download yaml-cpp 0.8.0. Please check your network connection or the URL."
     }
-    "${SUDO_CMD[@]}" tar -xzf /tmp/${tar_file} -C /tmp/${yaml_name} --strip-components=1 || {
+
+    cd /tmp
+
+    "${SUDO_CMD[@]}" tar -xzf /tmp/${tar_file} || {
         error "Failed to extract yaml-cpp 0.8.0. Please check the downloaded file."
     }
 
@@ -210,25 +250,71 @@ yaml_install(){
     "${SUDO_CMD[@]}" make install || {
         error "Failed to install yaml-cpp 0.8.0. Please check your network connection or the build process."
     }
+
     info "yaml-cpp 0.8.0 installed successfully."
 }
 
 mvs_install() {
     # 安装 海康 MVS SDK (Install Hikvision MVS SDK)
+
+    # 检查 /tmp/mvs_sdk 是否存在，如果存在则删除
+    if [ -d "/tmp/mvs_sdk" ]; then
+        if confirm "Directory /tmp/mvs_sdk already exists. Do you want to delete it?" ; then
+            "${SUDO_CMD[@]}" rm -rf /tmp/mvs_sdk || {
+                error "Failed to delete /tmp/mvs_sdk. Please check your permissions or if the directory exists."
+            }
+            info "Deleted existing /tmp/mvs_sdk directory."
+        else
+            info "Skipping deletion of /tmp/mvs_sdk directory."
+        fi
+    fi
+
     mkdir -p /tmp/mvs_sdk
     cd /tmp/mvs_sdk || {
         error "Failed to change directory to /tmp/mvs_sdk. Please check if the directory exists."
     }
-    wget /tmp/mvs_sdk/MVS_STD_V3.0.1_241128.zip https://www.hikrobotics.com/cn2/source/support/software/MVS_STD_V3.0.1_241128.zip || {
+    wget https://www.hikrobotics.com/cn2/source/support/software/MVS_STD_V3.0.1_241128.zip || {
         error "Failed to download MVS SDK. Please check your network connection or the URL."
     }
-    unzip /tmp/mvs_sdk/MVS_STD_V3.0.1_241128.zip
+    unzip MVS_STD_V3.0.1_241128.zip
     "${SUDO_CMD[@]}" dpkg -i MVS-3.0.1_x86_64_20241128.deb || {
         error "Failed to install MVS SDK MVS-3.0.1_x86_64_20241128.deb"
     }
+
     info "MVS SDK installed successfully."
 }
 
+livox_sdk2_install() {
+
+    # 安装 Livox SDK2
+    cd ~
+
+    # 检查 ~/Livox-SDK2 是否存在，如果存在则检查其是否安装
+    if [ -d "~/Livox-SDK2" ]; then
+        if confirm "Directory ~/Livox-SDK2 already exists. Do you want to delete it and reinstall Livox SDK2?" ; then
+            rm -rf ~/Livox-SDK2 || {
+                error "Failed to delete ~/Livox-SDK2. Please check your permissions or if the directory exists."
+            }
+            info "Deleted existing ~/Livox-SDK2 directory."
+        else
+            info "Skipping deletion of ~/Livox-SDK2 directory."
+            return 0
+        fi
+    fi
+
+    cd ~
+    git clone https://github.com/Livox-SDK/Livox-SDK2.git || {
+        error "Failed to clone Livox SDK2 repository. Please check your network connection or the URL."
+    }
+    cd ~/Livox-SDK2/
+    mkdir build
+    cd build
+    cmake .. && make -j
+    "${SUDO_CMD[@]}" make install
+
+    source ~/.bashrc
+    info "Livox SDK2 installed successfully."
+}
 
 libary_install() {
     # 安装常用库 (Install Common Libraries)
@@ -241,6 +327,7 @@ libary_install() {
 
     yaml_install
     mvs_install
+    livox_sdk2_install
 
 }
 
@@ -258,9 +345,77 @@ gazebo_install(){
 
     info "install ros-gz packages..."
 
-    "${SUDO_CMD[@]}" apt-get install ros-humble-ros-gz
+    "${SUDO_CMD[@]}" apt-get install -y ros-humble-ros-gz
+
+    source /opt/ros/humble/setup.bash
+    info "Gazebo installation completed successfully."
+}
+
+moveit2_install() {
+
+    # install moveit2
+
+    # check ~/ws_moveit 是否存在，如果存在则删除
+    cd ~
+    if [ -d "~/ws_moveit" ]; then
+        if confirm "Directory ~/ws_moveit already exists. Do you want to delete it and reinstall MoveIt 2?" ; then
+            rm -rf ~/ws_moveit || {
+                error "Failed to delete ~/ws_moveit. Please check your permissions or if the directory exists."
+            }
+            info "Deleted existing ~/ws_moveit directory."
+        else
+            info "Skipping deletion of ~/ws_moveit directory."
+            return 0
+        fi
+    fi
+
+    # install vcs
+    apt_install "python3-vcstool"
+
+    mkdir -p ~/ws_moveit/src
+    cd ~/ws_moveit/src
+    git clone -b humble https://github.com/moveit/moveit2_tutorials || {
+        error "Failed to clone MoveIt 2 tutorials repository. Please check your network connection or the URL."
+    }
+    vcs import --recursive < moveit2_tutorials/moveit2_tutorials.repos
+
+    "${SUDO_CMD[@]}" apt-get update && rosdepc install -r --from-paths . --ignore-src --rosdistro humble -y
+
+    cd ~/ws_moveit
+    colcon build
+
+    if confirm "Do you want to add source ~/ws_moveit/install/setup.bash to your ~/.bashrc?" ; then
+        if ! grep -q "source ~/ws_moveit/install/setup.bash" ~/.bashrc; then
+            echo "source ~/ws_moveit/install/setup.bash" >> ~/.bashrc
+            info "Added source ~/ws_moveit/install/setup.bash to ~/.bashrc"
+        else
+            warn "source ~/ws_moveit/install/setup.bash already exists in ~/.bashrc"
+        fi
+    else
+        info "Skipping adding source to ~/.bashrc."
+    fi
+    source ~/ws_moveit/install/setup.bash
 
     info "Gazebo installation completed successfully."
+}
+
+realsence_sdk_install(){
+    cd ~
+    git clone https://github.com/IntelRealSense/librealsense.git || {
+        error "Failed to clone librealsense repository. Please check your network connection or the URL."
+    }
+    cd librealsense
+    mkdir build
+    cd build
+    cmake .. && make || {
+        error "Failed to build librealsense. Please check your network connection or the build process."
+    }
+    "${SUDO_CMD[@]}" make install || {
+        error "Failed to install librealsense. Please check your network connection or the build process."
+    }
+
+    info "Realsense SDK installed successfully."
+    
 }
 
 # --- 主脚本 (Main Script) ---
@@ -275,7 +430,6 @@ fi
 if [ "$#" -eq 1 ]; then
     if [ "$1" == "-y" ]; then
         # 参数正确，设置标志为 true
-        export DEBIAN_FRONTEND=noninteractive
         assume_yes=true
     else
         # 参数不是 "-y"，判定为非法参数
@@ -325,4 +479,13 @@ gazebo_install || {
     error "Failed to install gazebo. Please check your network connection or apt sources."
 }
 
+moveit2_install || {
+    error "Failed to install MoveIt 2. Please check your network connection or apt sources."
+}
+
+realsence_sdk_install || {
+    error "Failed to install Realsense SDK. Please check your network connection or apt sources."
+}
+
 info "Robotmaster pnx engineering robot setup completed successfully."
+info "Please restart your terminal or run 'source ~/.bashrc' to apply the changes."
