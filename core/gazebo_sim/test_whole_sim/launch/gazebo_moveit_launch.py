@@ -278,11 +278,11 @@ def load_moveit(
 
     if namespace != "":
         rviz_parameters = [
-            moveit_config.planning_pipelines,
-            moveit_config.robot_description_kinematics,
+            {f"{robot_name}_planning_pipelines": moveit_config.planning_pipelines["planning_pipelines"]},
+            {f"{robot_name}_robot_description_kinematics": moveit_config.robot_description_kinematics["robot_description_kinematics"]},
             {f"{robot_name}_robot_description_semantic": moveit_config.robot_description_semantic["robot_description_semantic"]},
             {f"{robot_name}_robot_description": moveit_config.robot_description["robot_description"]},
-            moveit_config.joint_limits,
+            {f"{robot_name}_joint_limits": moveit_config.joint_limits},
             use_sim_time,
         ]
     else:
