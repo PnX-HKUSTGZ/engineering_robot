@@ -5,6 +5,80 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
+
+add_compile_options(-O2)
+
+# find dependencies
+find_package(ament_cmake REQUIRED)
+find_package(ament_index_cpp REQUIRED)
+
+
+include_directories("/opt/ros/humble/include/**")
+include_directories("/usr/include/pcl-1.12/")
+include_directories("/usr/include/eigen3/")
+include_directories("/usr/include/opencv4/")
+include_directories(${PROJECT_SOURCE_DIR}/include)
+include_directories(${PROJECT_SOURCE_DIR}/../../**)  # Add project root directory
+
+# find dependencies
+find_package(sensor_msgs REQUIRED)
+
+find_package(ament_cmake REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(rclcpp_components REQUIRED)
+
+find_package(tf2_ros REQUIRED)
+find_package(tf2_sensor_msgs REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
+find_package(tf2 REQUIRED)
+
+find_package(Eigen3 3.3 REQUIRED NO_MODULE)
+
+find_package(moveit_core REQUIRED)
+find_package(moveit_ros_planning REQUIRED)
+find_package(moveit_ros_planning_interface REQUIRED) # 如果使用 PlanningInterface
+find_package(moveit_visual_tools REQUIRED) # 如果使用可视化工具
+
+find_package(geometric_shapes REQUIRED)
+find_package(moveit_msgs REQUIRED)
+find_package(command_interfaces REQUIRED)
+find_package(geometry_msgs REQUIRED)
+
+find_package(yaml-cpp REQUIRED)
+
+file(GLOB_RECURSE SOURCES "src/*.cpp")
+
+add_executable(exchange_station_controll ${SOURCES})
+
+ament_target_dependencies(exchange_station_controll
+  geometry_msgs
+  rclcpp
+  sensor_msgs
+  rclcpp_components
+  Eigen3
+  tf2_ros
+  tf2
+  tf2_sensor_msgs
+  moveit_core
+  moveit_ros_planning
+  moveit_ros_planning_interface
+  moveit_visual_tools
+  geometric_shapes
+  moveit_msgs
+  command_interfaces
+  tf2_geometry_msgs
+  ament_index_cpp
+  
+)
+
+target_link_libraries(exchange_station_controll
+  yaml-cpp::yaml-cpp
+)
+
+install(TARGETS exchange_station_controll DESTINATION lib/${PROJECT_NAME})
+install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
+install(DIRECTORY config DESTINATION share/${PROJECT_NAME})
+
 # find dependencies
 find_package(ament_cmake REQUIRED)
 # uncomment the following section in order to fill in

@@ -185,6 +185,7 @@ def load_moveit(
                      .robot_description_kinematics(kinematics_path)
                      .robot_description_semantic(srdf_path)
                      .joint_limits(joint_limits_path)
+                     .planning_pipelines("ompl", ["ompl"])
                      .to_moveit_configs())
 
     ld.add_action(

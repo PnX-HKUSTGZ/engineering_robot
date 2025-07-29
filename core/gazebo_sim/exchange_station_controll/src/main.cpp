@@ -1,0 +1,16 @@
+#include "exchange_station_controll/exchange_station_controll.hpp"
+
+int main (int argc,char** argv){
+    rclcpp::init(argc,argv);
+    auto node=std::make_shared<Engineering_robot_Pnx::Exchange_Station_Controll>();
+
+    if(!node->MoveitInit()){
+        RCLCPP_ERROR(node->get_logger(),"MoveitInit fail!");
+        return -1;
+    }
+
+    rclcpp::spin(node);
+    rclcpp::shutdown();
+    return 0;
+    
+}

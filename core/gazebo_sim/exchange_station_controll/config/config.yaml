@@ -1,0 +1,71 @@
+ARM_CONTROL_GROUP: "exchange_arm_group"
+BOTTOM_LINK: "exchange_station_root_link"
+NAMESPACE: "exchange_station"
+ROBOT_DISCRIPTION_PARAM: "robot_description"
+END_EFFECTOR_LINK: "box_center_link"
+ExchangeStationStateLimit: 
+  level0:
+    x_min: -0.27
+    x_max: 0.0
+    y_min: -0.255
+    y_max: 0.255
+    z_min: 0.72
+    z_max: 0.90
+    theta_min: 0.0
+    theta_max: 0.0
+    phi_min: 0.0
+    phi_max: 0.0
+    alpha_min: 0.0
+    alpha_max: 0.0
+  level1:
+    x_min: -0.27
+    x_max: 0.0
+    y_min: -0.255
+    y_max: 0.255
+    z_min: 0.72
+    z_max: 0.90
+    theta_min: 0.0
+    theta_max: 0.0
+    phi_min: 0.0
+    phi_max: 1.57
+    alpha_min: 0.0
+    alpha_max: 0.0
+  level2:
+    x_min: -0.27
+    x_max: 0.0
+    y_min: -0.255
+    y_max: 0.255
+    z_min: 0.72
+    z_max: 0.90
+    theta_min: 0.0
+    theta_max: 0.0
+    phi_min: 0.0
+    phi_max: 1.57
+    alpha_min: -0.785
+    alpha_max: 0.785
+  level3:
+    x_min: -0.27
+    x_max: 0.0
+    y_min: -0.255
+    y_max: 0.255
+    z_min: 0.72
+    z_max: 0.90
+    theta_min: -2.356
+    theta_max: 2.356
+    phi_min: 0.0
+    phi_max: 1.57
+    alpha_min: -0.785
+    alpha_max: 0.785
+  level4:
+    x_min: -0.27
+    x_max: 0.0
+    y_min: -0.255
+    y_max: 0.255
+    z_min: 0.72
+    z_max: 0.90
+    theta_min: -2.356
+    theta_max: 2.356
+    phi_min: 0.0
+    phi_max: 1.57
+    alpha_min: -0.785
+    alpha_max: 0.785
