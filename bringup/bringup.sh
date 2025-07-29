@@ -92,6 +92,15 @@ apt_source_setup(){
         error "Failed to update apt sources. Please check your network connection or sources.list file."
     }
 
+    # ros2 官方源
+    "${SUDO_CMD[@]}" apt install software-properties-common
+    "${SUDO_CMD[@]}" add-apt-repository universe
+
+    "${SUDO_CMD[@]}" apt update && "${SUDO_CMD[@]}" apt install curl -y
+    export ROS_APT_SOURCE_VERSION=$(curl -s https://api.github.com/repos/ros-infrastructure/ros-apt-source/releases/latest | grep -F "tag_name" | awk -F\" '{print $4}')
+    curl -L -o /tmp/ros2-apt-source.deb "https://github.com/ros-infrastructure/ros-apt-source/releases/download/${ROS_APT_SOURCE_VERSION}/ros2-apt-source_${ROS_APT_SOURCE_VERSION}.$(. /etc/os-release && echo $VERSION_CODENAME)_all.deb" # If using Ubuntu derivates use $UBUNTU_CODENAME
+    "${SUDO_CMD[@]}" dpkg -i /tmp/ros2-apt-source.deb
+
     info "Apt source setup completed successfully."
 
 }
@@ -346,6 +355,7 @@ gazebo_install(){
     info "install ros-gz packages..."
 
     "${SUDO_CMD[@]}" apt-get install -y ros-humble-ros-gz
+    "${SUDO_CMD[@]}" apt-get install -y ros-humble-gz-ros2-control
 
     source /opt/ros/humble/setup.bash
     info "Gazebo installation completed successfully."
