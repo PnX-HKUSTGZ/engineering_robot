@@ -471,8 +471,12 @@ bool ArrowDetector::getCounterCorners(const Counter& counter,
 
 bool ArrowDetector::detect(InputData input_data, DetectorOutput& output_data){
 
+    if(!input_data.image){
+        RCLCPP_ERROR(node_->get_logger(), "[detect] image data is null !!");
+        return 0;
+    }
 
-    output_data.result_image_=std::make_shared<cv::Mat>(input_data.image.clone());
+    output_data.result_image_=std::make_shared<cv::Mat>(input_data.image->clone());
 
     colored_image = *output_data.result_image_;
 

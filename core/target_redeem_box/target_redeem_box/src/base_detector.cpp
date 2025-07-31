@@ -3,7 +3,7 @@
 namespace Engineering_robot_Pnx{
 
 InputData::InputData(const rclcpp::Time& time_, 
-    const cv::Mat& image_, 
+     const std::shared_ptr<const cv::Mat>& image_,
     const pcl::PointCloud<pcl::PointXYZ>::ConstPtr pc_):
     update_time(time_),
     image(image_),

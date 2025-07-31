@@ -25,6 +25,8 @@
 #include <pcl/filters/voxel_grid.h>
 #include <pcl/filters/statistical_outlier_removal.h>
 
+#include <realtime_tools/realtime_buffer.hpp>
+
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
 
@@ -74,12 +76,12 @@ private:
     // 目标检测线程列表
     std::vector<std::thread> detect_threads;
 
-    // 输入数据，会随着时间更新，有锁 input_data_mutex
-    InputData::SharedPtr input_data;
-    // input_data 的锁
-    std::mutex input_data_mutex;
+    // realtime buffer
 
-
+    // 点云buffer
+    realtime_tools::RealtimeBuffer<pcl::PointCloud<pcl::PointXYZ>::ConstPtr> point_cloud_buffer;
+    // image buffer
+    realtime_tools::RealtimeBuffer<std::shared_ptr<const cv::Mat>> image_buffer;
 
     tf2_ros::Buffer::SharedPtr tf2_buffer_;
     std::shared_ptr<tf2_ros::TransformListener> tf2_listener_;
@@ -87,20 +89,25 @@ private:
 
     std::shared_ptr<message_filters::Subscriber<sensor_msgs::msg::Image>> image_subscriber_;
     std::shared_ptr<message_filters::Subscriber<sensor_msgs::msg::PointCloud2>> point_cloud_subscriber_;
-    std::shared_ptr<message_filters::Synchronizer<SyncPolicy>> synchronizer_;
+    // std::shared_ptr<message_filters::Synchronizer<SyncPolicy>> synchronizer_;
 
     std::shared_ptr<rclcpp::Publisher<sensor_msgs::msg::Image>> posed_image_publisher_;
 
     /**
      * 点云图像同步的callback
      */
-    void image_point_cloud_callback(const sensor_msgs::msg::Image::ConstSharedPtr& image_msg, 
-        const sensor_msgs::msg::PointCloud2::ConstSharedPtr& point_cloud_msg);
+    // void image_point_cloud_callback(const sensor_msgs::msg::Image::ConstSharedPtr& image_msg, 
+    //     const sensor_msgs::msg::PointCloud2::ConstSharedPtr& point_cloud_msg);
 
     /**
      * 图像信息的单独的callback
      */
     void image_callback(const sensor_msgs::msg::Image::ConstSharedPtr& image_msg);
+
+    /**
+     * 点云信息的单独的callback
+     */
+    void point_cloud_callback(const sensor_msgs::msg::PointCloud2::ConstSharedPtr& point_cloud_msg);
 
     /**
      * @brief 处理检测结果

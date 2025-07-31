@@ -108,7 +108,7 @@ protected:
     pcl::PointCloud<pcl::PointNormal>::Ptr arrow_point_cloud_normal=nullptr;
     // 计算箭头点云的法向量的时候的视角 xyz
     std::vector<double> ArrowViewPoint;
-    // 原点云 kdtree搜索树的搜索半径
+    // 目标点云 kdtree搜索树的搜索半径
     double ArrowKDSearchRadius;
 
 

@@ -1,23 +1,69 @@
 topics:
   image: "/test_robot/image/image"
-  point_cloud: "sensor/RealSense/point_cloud"
+  point_cloud: "/test_robot/lidar/points"
 tf_frames:
   image: "image_sensor_link"
-  point_cloud: "sensor/mid360"
+  point_cloud: "lidar_sensor_link"
 input_data_time_out: [0,50000000] # int32 [s.ns] 
 
 # 设置哪些检测器运行，设置其运行参数 [type, name]
 # 对应的config 在 detector_config 下对应的 name 键下
 detectors: [ 
   # ["rectangle_detector","rectangle_detector"],
-  ["arrow_detector","arrow_detector"],
-  # ["arrow_detector_pcl","arrow_detector_pcl"],
+  # ["arrow_detector","arrow_detector"],
+  ["arrow_detector_pcl","arrow_detector_pcl"],
   ]
 
 
 detector_config:
+  arrow_detector_pcl:
+    # arrow_detector part
+    BinaryThresholdThresh: 160.
+    BinaryThresholdMaxval: 300.
+    approxPolyDPEpsilon: 10.
+    LongShortRateMin: 5.0
+    LongShortRateMax: 25.0
+    PixelNumMin: 0
+    PixelNumMax: 80000
+    RectLengthWidthRatioMin: 1.1
+    RectLengthWidthRatioMax: 3.0
+    ApproxcurveSizeMin: 6
+    ApproxcurveSizeMax: 6
+    InitHorizonLeftThreshold: 0
+    InitHorizonRightThreshold: 10
+    CannyThreshold1: 200.0
+    CannyThreshold2: 300.0
+    CannyapertureSize: 5
+    PeaksIgnoreRadius: 5.0
+    camera_matrix: [2359.097622983389, 0, 716.4220530130086 , 0, 2358.885626507973, 570.2984339623623, 0.0, 0.0, 1.0]
+    # 在传感器端已经处理了畸变
+    dist_coeffs: [0,0,0,0,0]
+    object_points:
+      - [0.144, 0, 0.0455]
+      - [0.144, 0, 0.059642135623730955]
+      - [0.144, 0.1, 0.1455]
+      - [0.144, 0.08585786437626905, 0.1455]
+      - [0.144, -0.1, 0.1455]
+      - [0.144, -0.08585786437626905, 0.1455]
+      - [0.144, 0.007071067811865476, 0.05257106781186548]
+      - [0.144, -0.007071067811865476, 0.05257106781186548]
+    redeem_front_points:
+      - [-0.12, 0.12, 0]
+      - [0.12, 0.12, 0]
+      - [0.12, -0.12, 0]
+      - [-0.12, -0.12, 0]
+    # pcl part
+    ArrowPath: "/home/pnx/code/engineering_robot/core/target_redeem_box/target_redeem_box/mesh/arrow.pcd"
+    SourceKDSearchRadius: 0.05
+    ArrowKDSearchRadius: 0.05
+    ICPMaxCorrespondenceDistance: 0.05
+    MaximumIterations: 100
+    TransformationEpsilon: 0.001
+    EuclideanFitnessEpsilon: 0.001
+    ArrowViewPoint: [0, 0, 0]
+
   arrow_detector:
-    BinaryThresholdThresh: 130.
+    BinaryThresholdThresh: 170.
     BinaryThresholdMaxval: 300.
     approxPolyDPEpsilon: 10.
     LongShortRateMin: 5.0

@@ -45,33 +45,18 @@ DetectorManager::DetectorManager(rclcpp::NodeOptions options) : rclcpp::Node("ta
 
     posed_image_publisher_=this->create_publisher<sensor_msgs::msg::Image>("colored_image",10);
     
-    // 直接使用 rmw/qos_profiles.h 提供的 rmw_qos_profile_sensor_data 作为 qos 配置
-    image_subscriber_=std::make_shared<message_filters::Subscriber<sensor_msgs::msg::Image>>(this,image_topic,rmw_qos_profile_sensor_data);
-    point_cloud_subscriber_=std::make_shared<message_filters::Subscriber<sensor_msgs::msg::PointCloud2>>(this,point_cloud_topic,rmw_qos_profile_sensor_data);
+    // 初始化 buffer
 
+    image_buffer.writeFromNonRT(nullptr);
+    point_cloud_buffer.writeFromNonRT(nullptr);
 
-    // 检测是否有点云发布者
+    // 使用 默认 qos 配置，保证通讯之间的Reliability属性相同
 
-    bool have_point_cloud_publisher=false;
-    for(int i=0;i<5;i++){
-        if(this->count_publishers(point_cloud_topic)){
-            have_point_cloud_publisher=true;
-            break;
-        }
-        RCLCPP_WARN(this->get_logger(),"wait for point cloud publisher");
-        std::this_thread::sleep_for(std::chrono::milliseconds(200));
-    }
-    if(!have_point_cloud_publisher){
-        RCLCPP_WARN(this->get_logger(),"no point cloud publisher, use image topic only");
-        image_subscriber_->registerCallback(std::bind(&DetectorManager::image_callback,this,std::placeholders::_1));
-    }
-    else{
-        RCLCPP_INFO(this->get_logger(),"use image and point cloud topic");
-        synchronizer_=std::make_shared<message_filters::Synchronizer<SyncPolicy>>(SyncPolicy(10), *image_subscriber_, *point_cloud_subscriber_);
-        synchronizer_->registerCallback(
-            std::bind(&DetectorManager::image_point_cloud_callback,this,std::placeholders::_1,std::placeholders::_2)
-        );
-    }
+    image_subscriber_=std::make_shared<message_filters::Subscriber<sensor_msgs::msg::Image>>(this,image_topic);
+    point_cloud_subscriber_=std::make_shared<message_filters::Subscriber<sensor_msgs::msg::PointCloud2>>(this,point_cloud_topic);
+
+    image_subscriber_->registerCallback(std::bind(&DetectorManager::image_callback,this,std::placeholders::_1));
+    point_cloud_subscriber_->registerCallback(std::bind(&DetectorManager::point_cloud_callback,this,std::placeholders::_1));
 
     bool init_detectors_success=init_detectors();
     if(!init_detectors_success){
@@ -85,8 +70,57 @@ DetectorManager::DetectorManager(rclcpp::NodeOptions options) : rclcpp::Node("ta
 
 }
 
-void DetectorManager::image_point_cloud_callback(const sensor_msgs::msg::Image::ConstSharedPtr& image_msg, 
-        const sensor_msgs::msg::PointCloud2::ConstSharedPtr& point_cloud_msg){
+// void DetectorManager::image_point_cloud_callback(const sensor_msgs::msg::Image::ConstSharedPtr& image_msg, 
+//         const sensor_msgs::msg::PointCloud2::ConstSharedPtr& point_cloud_msg){
+
+//     // 转换图像
+
+//     cv::Mat image;
+//     try{
+//         cv_bridge::toCvCopy(image_msg, sensor_msgs::image_encodings::BGR8)->image.copyTo(image);
+//     }
+//     catch (cv_bridge::Exception& e){
+//     // 转换失败
+//         RCLCPP_ERROR(this->get_logger(), "cv_bridge exception: %s", e.what());
+//         return;
+//     }
+
+//     // 转换点云
+
+//     geometry_msgs::msg::TransformStamped transform;
+//     std::shared_ptr<sensor_msgs::msg::PointCloud2> transformed_cloud;
+//     std::shared_ptr<pcl::PointCloud<pcl::PointXYZ>> transformed_cloud_pcl;
+    
+//     try{
+//         transform=tf2_buffer_->lookupTransform(
+//             image_frame,
+//             point_cloud_frame,
+//             this->now(),
+//             rclcpp::Duration::from_seconds(1.0)
+//         );
+//     }
+//     catch (tf2::TransformException &ex){
+//         RCLCPP_WARN(this->get_logger(),"[image_point_cloud_callback]: %s",ex.what());
+//         return;
+//     }
+
+
+//     tf2::doTransform(*point_cloud_msg, *transformed_cloud, transform);
+//     pcl::fromROSMsg(*transformed_cloud, *transformed_cloud_pcl);
+
+//     // 包装数据
+//     InputData::SharedPtr input_data=std::make_shared<InputData>(this->now(),image,transformed_cloud_pcl);
+    
+//     {
+//         std::lock_guard<std::mutex> lock(input_data_mutex);
+//         this->input_data=input_data;
+//     }
+
+//     RCLCPP_INFO(this->get_logger(),"[image_point_cloud_callback] input data update");
+
+// }
+        
+void DetectorManager::image_callback(const sensor_msgs::msg::Image::ConstSharedPtr& image_msg){
 
     // 转换图像
 
@@ -99,13 +133,19 @@ void DetectorManager::image_point_cloud_callback(const sensor_msgs::msg::Image::
         RCLCPP_ERROR(this->get_logger(), "cv_bridge exception: %s", e.what());
         return;
     }
-
-    // 转换点云
-
-    geometry_msgs::msg::TransformStamped transform;
-    std::shared_ptr<sensor_msgs::msg::PointCloud2> transformed_cloud;
-    std::shared_ptr<pcl::PointCloud<pcl::PointXYZ>> transformed_cloud_pcl;
     
+    image_buffer.writeFromNonRT(std::make_shared<const cv::Mat>(image));
+
+    RCLCPP_INFO(this->get_logger(),"[image_callback] input data update");
+
+}
+
+void DetectorManager::point_cloud_callback(const sensor_msgs::msg::PointCloud2::ConstSharedPtr& point_cloud_msg){
+    
+    geometry_msgs::msg::TransformStamped transform;
+    std::shared_ptr<sensor_msgs::msg::PointCloud2> transformed_cloud=std::make_shared<sensor_msgs::msg::PointCloud2>();
+    std::shared_ptr<pcl::PointCloud<pcl::PointXYZ>> transformed_cloud_pcl=std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+
     try{
         transform=tf2_buffer_->lookupTransform(
             image_frame,
@@ -123,43 +163,10 @@ void DetectorManager::image_point_cloud_callback(const sensor_msgs::msg::Image::
     tf2::doTransform(*point_cloud_msg, *transformed_cloud, transform);
     pcl::fromROSMsg(*transformed_cloud, *transformed_cloud_pcl);
 
-    // 包装数据
-    InputData::SharedPtr input_data=std::make_shared<InputData>(this->now(),image,transformed_cloud_pcl);
-    
-    {
-        std::lock_guard<std::mutex> lock(input_data_mutex);
-        this->input_data=input_data;
-    }
-
-    RCLCPP_INFO(this->get_logger(),"[image_point_cloud_callback] input data update");
+    point_cloud_buffer.writeFromNonRT(transformed_cloud_pcl);
 
 }
-        
-void DetectorManager::image_callback(const sensor_msgs::msg::Image::ConstSharedPtr& image_msg){
 
-    // 转换图像
-
-    cv::Mat image;
-    try{
-        cv_bridge::toCvCopy(image_msg, sensor_msgs::image_encodings::BGR8)->image.copyTo(image);
-    }
-    catch (cv_bridge::Exception& e){
-    // 转换失败
-        RCLCPP_ERROR(this->get_logger(), "cv_bridge exception: %s", e.what());
-        return;
-    }
-    
-    InputData::SharedPtr input_data=std::make_shared<InputData>(this->now(),image,nullptr);
-
-    {
-        std::lock_guard<std::mutex> lock(input_data_mutex);
-        this->input_data=input_data;
-    }
-
-    // RCLCPP_INFO(this->get_logger(),"[image_callback] input data update");
-
-}
-        
 
 bool DetectorManager::init_detectors(){
     try{
@@ -176,49 +183,50 @@ bool DetectorManager::init_detectors(){
 
 
     try{
-    int detector_num=config["detectors"].size();
-    for(int i=0;i<detector_num;i++){
-        std::string detector_type=config["detectors"][i][0].as<std::string>();
-        std::string detector_name=config["detectors"][i][1].as<std::string>();
-        YAML::Node config_node= (config["detector_config"][detector_name].IsMap() ? config["detector_config"][detector_name] : YAML::Node());
+        int detector_num=config["detectors"].size();
+        for(int i=0;i<detector_num;i++){
+            std::string detector_type=config["detectors"][i][0].as<std::string>();
+            std::string detector_name=config["detectors"][i][1].as<std::string>();
+            YAML::Node config_node= (config["detector_config"][detector_name].IsMap() ? config["detector_config"][detector_name] : YAML::Node());
 
-        std::shared_ptr<BaseDetector> detector=nullptr;
+            RCLCPP_INFO(this->get_logger(),"[init_detectors] try init %s",detector_name.c_str());
+            std::shared_ptr<BaseDetector> detector=nullptr;
 
-        try{
-            if(detector_type=="arrow_detector"){
-                detector=std::make_shared<ArrowDetector>(
-                    config_node,
-                    detector_name);
+            try{
+                if(detector_type=="arrow_detector"){
+                    detector=std::make_shared<ArrowDetector>(
+                        config_node,
+                        detector_name);
+                }
+                else if(detector_type=="arrow_detector_pcl"){
+                    detector=std::make_shared<ArrowDetectorPCL>(
+                        config_node,
+                        detector_name);
+                }
+                // else if(detector_type=="rectangle_detector"){
+                //     std::shared_ptr<RectangleDetector> detector=std::make_shared<RectangleDetector>(
+                //         config_node,
+                //         detector_name);
+                //     detectors.push_back(detector);
+                // }
+                else{
+                    RCLCPP_ERROR(this->get_logger(),"[init_detectors] get detector type error, get %s. skip",detector_type.c_str());
+                }
+                RCLCPP_INFO(this->get_logger(),"[init_detectors] init %s success",detector_name.c_str());
             }
-            else if(detector_type=="arrow_detector_pcl"){
-                std::shared_ptr<ArrowDetectorPCL> detector=std::make_shared<ArrowDetectorPCL>(
-                    config_node,
-                    detector_name);
+            catch(const std::exception& e){
+                RCLCPP_ERROR(this->get_logger(),"[init_detectors] init detector error:%s",e.what());
+                continue;
+            }
+            if(detector!=nullptr){
                 detectors.push_back(detector);
             }
-            // else if(detector_type=="rectangle_detector"){
-            //     std::shared_ptr<RectangleDetector> detector=std::make_shared<RectangleDetector>(
-            //         config_node,
-            //         detector_name);
-            //     detectors.push_back(detector);
-            // }
-            else{
-                RCLCPP_ERROR(this->get_logger(),"[init_detectors] get detector type error, get %s. skip",detector_type.c_str());
-            }
         }
-        catch(const std::exception& e){
-            RCLCPP_ERROR(this->get_logger(),"[init_detectors] init detector error:%s",e.what());
-            continue;
-        }
-        if(detector!=nullptr){
-            detectors.push_back(detector);
-        }
-    }
 
-    if(detectors.size()!=std::size_t(detector_num)){
-        RCLCPP_FATAL(this->get_logger(),"[init_detectors] init detectors error, not all detectors init success, init %ld, get %d",detectors.size(),detector_num);
-        return false;
-    }
+        if(detectors.size()!=std::size_t(detector_num)){
+            RCLCPP_FATAL(this->get_logger(),"[init_detectors] init detectors error, not all detectors init success, init %ld, get %d",detectors.size(),detector_num);
+            return false;
+        }
     }
     catch(const std::exception& e){
         RCLCPP_FATAL(this->get_logger(),"[init_detectors] init arrow detector error:%s",e.what());
@@ -247,11 +255,12 @@ void DetectorManager::start_detect(){
             if(!rclcpp::ok()){
                 break;
             }
-            std::shared_ptr<InputData> input_data;
-            {
-                std::lock_guard<std::mutex> lock(input_data_mutex);
-                input_data=this->input_data;
-            }
+            std::shared_ptr<InputData> input_data=std::make_shared<InputData>(
+                this->get_clock()->now(),
+                *image_buffer.readFromRT(),
+                *point_cloud_buffer.readFromRT()
+            );
+
             if(input_data==nullptr){
                 RCLCPP_WARN(this->get_logger(),"[%s] input data is null",detector->getDetectorName().c_str());
                 continue;

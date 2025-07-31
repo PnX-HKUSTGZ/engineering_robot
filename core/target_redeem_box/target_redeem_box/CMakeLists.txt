@@ -8,6 +8,7 @@ endif()
 add_compile_options(-O2)
 
 include_directories("/opt/ros/humble/include/**")
+include_directories("/opt/ros/humble/include/realtime_tools")
 include_directories("/usr/include/pcl-1.12/")
 include_directories("/usr/include/eigen3/")
 include_directories("/usr/include/opencv4/")

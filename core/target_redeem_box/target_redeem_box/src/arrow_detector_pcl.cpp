@@ -9,33 +9,57 @@ std::string const ArrowDetectorPCL::getDetectorName(){
 ArrowDetectorPCL::ArrowDetectorPCL(const YAML::Node& config, 
         rclcpp::Node::SharedPtr node, 
         const std::string & name)
-    :ArrowDetector(config, node, name){
+    :ArrowDetector(config, node, name+"_attach_ArrowDetector"){
+        RCLCPP_INFO(node_->get_logger(),"[ArrowDetectorPCL] initing %s",name.c_str());
+        RCLCPP_INFO(node_->get_logger(),"[ArrowDetectorPCL] loading config %s",ArrowPath.c_str());
         bool ret = loadConfig();
         if(!ret){
             RCLCPP_ERROR(node_->get_logger(), " load config error");
             throw std::runtime_error("ArrowDetectorPCL load config error");
         }
+        RCLCPP_INFO(node_->get_logger(),"[ArrowDetectorPCL] init %s successfully",name.c_str());
     }
 
 ArrowDetectorPCL::ArrowDetectorPCL(const YAML::Node& config, 
     const std::string & name):
-    ArrowDetector(config, name){
+    ArrowDetector(config, name+"_attach_ArrowDetector"){
+        RCLCPP_INFO(node_->get_logger(),"[ArrowDetectorPCL] initing %s",name.c_str());
+        RCLCPP_INFO(node_->get_logger(),"[ArrowDetectorPCL] loading config %s",ArrowPath.c_str());
         bool ret = loadConfig();
         if(!ret){
             RCLCPP_ERROR(node_->get_logger(), " load config error");
             throw std::runtime_error("ArrowDetectorPCL load config error");
         }
+        RCLCPP_INFO(node_->get_logger(),"[ArrowDetectorPCL] init %s successfully",name.c_str());
     }
 
 ArrowDetectorPCL::~ArrowDetectorPCL(){
 }
 
 bool ArrowDetectorPCL::loadConfig(){
-    try{
+    try {
         ArrowPath = config["ArrowPath"].as<std::string>();
+
+        if (config["ArrowKDSearchRadius"]) {
+            ArrowKDSearchRadius = config["ArrowKDSearchRadius"].as<double>();
+        } else {
+            RCLCPP_ERROR(node_->get_logger(), "Config error: 'ArrowKDSearchRadius' is not defined in YAML!");
+            return false;
+        }
+
+        if (config["ArrowViewPoint"] && config["ArrowViewPoint"].IsSequence()) {
+            ArrowViewPoint = config["ArrowViewPoint"].as<std::vector<double>>();
+            if (ArrowViewPoint.size() < 3) {
+                RCLCPP_ERROR(node_->get_logger(), "Config error: 'ArrowViewPoint' must have at least 3 elements!");
+                return false;
+            }
+        } else {
+            RCLCPP_ERROR(node_->get_logger(), "Config error: 'ArrowViewPoint' is not defined or not a sequence in YAML!");
+            return false;
+        }
     }
-    catch(const std::exception& e){
-        RCLCPP_ERROR(node_->get_logger(), " load config error");
+    catch (const std::exception& e) {
+        RCLCPP_ERROR(node_->get_logger(), "Load config from YAML failed: %s", e.what());
         return false;
     }
 
@@ -56,6 +80,9 @@ bool ArrowDetectorPCL::loadConfig(){
         ne.setViewPoint(ArrowViewPoint[0],ArrowViewPoint[1],ArrowViewPoint[2]);
         ne.compute(*arrow_normals);
 
+        arrow_point_cloud_normal = std::make_shared<pcl::PointCloud<pcl::PointNormal>>();
+            pcl::concatenateFields(*arrow_point_cloud, *arrow_normals, *arrow_point_cloud_normal);
+
     }
     catch(const std::exception& e){
         RCLCPP_ERROR(node_->get_logger(), " load arrow point cloud and compute normal vec error");
@@ -73,8 +100,12 @@ bool ArrowDetectorPCL::detect(InputData input_data,
         RCLCPP_ERROR(node_->get_logger(), "[detect] input point cloud is empty!");
         return false;
     }
+    if(!input_data.image){
+        RCLCPP_ERROR(node_->get_logger(), "[detect] input point cloud is empty!");
+        return false;
+    }
 
-    output_data.result_image_=std::make_shared<cv::Mat>(input_data.image.clone());
+    output_data.result_image_=std::make_shared<cv::Mat>(input_data.image->clone());
 
     colored_image = *output_data.result_image_;
 
@@ -91,10 +122,13 @@ bool ArrowDetectorPCL::detect(InputData input_data,
     }
 
 
-    //点云圆形的ROI
+    //点云的ROI
     pcl::PointCloud<pcl::PointXYZ>::Ptr roi_cloud(new pcl::PointCloud<pcl::PointXYZ>);
 
     getROI(input_data.point_cloud_,roi_cloud,corners);
+
+    // 发布 点云的ROI
+    
 
     // ICP Point_to_plane
 
@@ -239,6 +273,11 @@ bool ArrowDetectorPCL::imageArrowDetect(cv::Mat &rvec,
         RCLCPP_ERROR(node_->get_logger(), "[imageArrowDetect] imagePreprocess fail! %s",e.what());
         return false;
     }
+
+    cv::imshow("binary_image",binary_image);
+    cv::imshow("gray_image",gray_image);
+    cv::imshow("colored_image",colored_image);
+    cv::waitKey(1);
 
     try{
         if(!targetArrow(binary_image,gray_image,corners)){
