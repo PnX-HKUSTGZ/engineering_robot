@@ -342,7 +342,7 @@ def generate_launch_description():
         ld,
         "exchange_station_sim",
         "exchange_station",
-        0,0,0,0,0,0,
+        0,0,0,0,0,3.14/2,
         "exchange_station",
     )
 
@@ -350,7 +350,7 @@ def generate_launch_description():
         ld,
         "test_robot_sim",
         "test_robot",
-        1,3,0
+        0,3,0,0,0,-3.14/2,
     )
 
     load_moveit(
