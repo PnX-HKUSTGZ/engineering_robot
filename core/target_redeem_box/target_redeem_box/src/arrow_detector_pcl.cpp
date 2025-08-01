@@ -30,6 +30,9 @@ ArrowDetectorPCL::ArrowDetectorPCL(const YAML::Node& config,
             RCLCPP_ERROR(node_->get_logger(), " load config error");
             throw std::runtime_error("ArrowDetectorPCL load config error");
         }
+
+        arrow_pcl_pub_ = node_->create_publisher<sensor_msgs::msg::PointCloud2>("arrow_pcl", 10);
+
         RCLCPP_INFO(node_->get_logger(),"[ArrowDetectorPCL] init %s successfully",name.c_str());
     }
 
@@ -128,7 +131,13 @@ bool ArrowDetectorPCL::detect(InputData input_data,
     getROI(input_data.point_cloud_,roi_cloud,corners);
 
     // 发布 点云的ROI
-    
+    {
+        sensor_msgs::msg::PointCloud2 roi_pcl_msg;
+        pcl::toROSMsg(*roi_cloud, roi_pcl_msg);
+        roi_pcl_msg.header.frame_id = "image_sensor_link";
+        roi_pcl_msg.header.stamp = node_->get_clock()->now();
+        arrow_pcl_pub_->publish(roi_pcl_msg);
+    }
 
     // ICP Point_to_plane
 

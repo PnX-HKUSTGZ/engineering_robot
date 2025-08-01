@@ -25,16 +25,26 @@
 
   <link name="image_sensor_link">
   </link>
+  <link name="image_sensor_real_link">
+  </link>
+
+  <joint name="image_sensor_real_joint" type="fixed">
+    <parent link="image_sensor_link"/>
+    <child link="image_sensor_real_link"/>
+    <origin
+      xyz="0 0 0"
+      rpy="0 -1.570796327 0" />
+  </joint>
 
   <joint name="image_sensor_joint" type="fixed">
     <parent link="dummy"/>
     <child link="image_sensor_link"/>
     <origin
       xyz="0 0 0.5"
-      rpy="0 0 0" />
+      rpy="0 1.570796327 0" />
   </joint>
 
-  <gazebo reference="image_sensor_link">
+  <gazebo reference="image_sensor_real_link">
     <sensor name="camera_sensor" type="rgbd_camera">
       <camera>
         <horizontal_fov>1.047</horizontal_fov>
@@ -52,13 +62,6 @@
       <update_rate>30</update_rate>
       <visualize>true</visualize>
       <topic>test_robot/image</topic>
-      <!-- <plugin
-        filename="RosGzPointCloud"
-        name="ros_gz_point_cloud::PointCloud">
-        <namespace>test_robot</namespace>
-        <topic>point_cloud</topic>
-        <frame_id>image_sensor_link</frame_id>
-      </plugin> -->
     </sensor>
   </gazebo>
 

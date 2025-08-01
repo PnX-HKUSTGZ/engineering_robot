@@ -110,7 +110,10 @@ protected:
     std::vector<double> ArrowViewPoint;
     // 目标点云 kdtree搜索树的搜索半径
     double ArrowKDSearchRadius;
+    
+private:
 
+    rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr arrow_pcl_pub_;
 
 };
 
